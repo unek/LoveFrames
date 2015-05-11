@@ -42,6 +42,13 @@ loveframes.basicfontsmall = love.graphics.newFont(10)
 loveframes.objects = {}
 loveframes.collisions = {}
 
+-- check if we can actually use system cursors
+if loveframes.config["ENABLE_SYSTEM_CURSORS"] then
+	if love.mouse.hasCursor and not love.mouse.hasCursor() then
+		loveframes.config["ENABLE_SYSTEM_CURSORS"] = false
+	end
+end
+
 -- install directory of the library
 local dir = loveframes.config["DIRECTORY"] or path
 
