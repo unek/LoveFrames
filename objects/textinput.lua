@@ -673,6 +673,10 @@ function newobject:RunKey(key, istext)
 				end
 			end
 			return
+		elseif key == "home" then
+			self:MoveIndicator(-math.huge)
+		elseif key == "end" then
+			self:MoveIndicator(math.huge)
 		end
 
 		if not editable then
