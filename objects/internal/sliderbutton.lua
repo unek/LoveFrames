@@ -30,10 +30,17 @@ function newobject:initialize(parent)
 	self.down = false
 	self.dragging = false
 	self.parent = parent
-	
+
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.width = directives.sliderbutton_width or self.width
+		self.height = directives.sliderbutton_height or self.height
+	end
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -41,18 +48,18 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local x, y = love.mouse.getPosition()
 	local intervals = self.intervals
 	local progress = 0
@@ -66,7 +73,7 @@ function newobject:update(dt)
 	local dragging = self.dragging
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	if not hover then
 		self.down = false
 		if downobject == self then
@@ -77,17 +84,17 @@ function newobject:update(dt)
 			self.down = true
 		end
 	end
-	
+
 	if not down and downobject == self then
 		self.hover = true
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = parent.x + self.staticx
 		self.y = parent.y + self.staticy
 	end
-	
+
 	-- start calculations if the button is being dragged
 	if dragging then
 		-- calculations for horizontal sliders
@@ -122,7 +129,7 @@ function newobject:update(dt)
 		end
 		loveframes.downobject = self
 	end
-	
+
 	if slidetype == "horizontal" then
 		if (self.staticx + self.width) > self.parent.width then
 			self.staticx = self.parent.width - self.width
@@ -131,16 +138,16 @@ function newobject:update(dt)
 			self.staticx = 0
 		end
 	end
-	
+
 	if slidetype == "vertical" then
 		if (self.staticy + self.height) > self.parent.height then
 			self.staticy = self.parent.height - self.height
-		end		
+		end
 		if self.staticy < 0 then
 			self.staticy = 0
 		end
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -152,13 +159,13 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
@@ -167,16 +174,16 @@ function newobject:draw()
 	local drawfunc = skin.DrawSliderButton or skins[defaultskin].DrawSliderButton
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -184,16 +191,16 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -206,7 +213,7 @@ function newobject:mousepressed(x, y, button)
 		self.clicky = y
 		loveframes.downobject = self
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -214,16 +221,16 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local down = self.down
 	local dragging = self.dragging
-	
+
 	if dragging then
 		local parent = self.parent
 		local onrelease = parent.OnRelease
@@ -231,7 +238,7 @@ function newobject:mousereleased(x, y, button)
 			onrelease(parent)
 		end
 	end
-	
+
 	self.down = false
 	self.dragging = false
 
@@ -244,7 +251,7 @@ end
 function newobject:MoveToX(x)
 
 	self.staticx = x
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -254,5 +261,5 @@ end
 function newobject:MoveToY(y)
 
 	self.staticy = y
-	
+
 end

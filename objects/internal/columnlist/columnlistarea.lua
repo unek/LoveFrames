@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("columnlistarea", "loveframes_object_colu
 	- desc: intializes the element
 --]]---------------------------------------------------------
 function newobject:initialize(parent)
-	
+
 	self.type = "columnlistarea"
 	self.display = "vertical"
 	self.parent = parent
@@ -33,14 +33,13 @@ function newobject:initialize(parent)
 	self.mousewheelscrollamount = parent.mousewheelscrollamount
 	self.vbar = false
 	self.hbar = false
-	self.dtscrolling = parent.dtscrolling
 	self.internal = true
 	self.internals = {}
 	self.children = {}
 
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -48,26 +47,26 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	if not self.visible then
 		if not self.alwaysupdate then
 			return
 		end
 	end
-	
+
 	local cwidth, cheight = self.parent:GetColumnSize()
 	local parent = self.parent
 	local update = self.Update
 	local internals = self.internals
-	
+
 	self:CheckHover()
-	
+
 	-- move to parent if there is a parent
 	if parent ~= loveframes.base then
 		self.x = parent.x + self.staticx
 		self.y = parent.y + self.staticy
 	end
-	
+
 	for k, v in ipairs(self.children) do
 		local col = loveframes.util.BoundingBox(self.x, v.x, self.y, v.y, self.width, v.width, self.height, v.height)
 		if col then
@@ -77,11 +76,11 @@ function newobject:update(dt)
 		v.y = (v.parent.y + v.staticy) - self.offsety + cheight
 		v.x = (v.parent.x + v.staticx) - self.offsetx
 	end
-	
+
 	for k, v in ipairs(self.internals) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -97,7 +96,7 @@ function newobject:draw()
 	if not self.visible then
 		return
 	end
-	
+
 	local x = self.x
 	local y = self.y
 	local width = self.width
@@ -112,45 +111,43 @@ function newobject:draw()
 	local draw = self.Draw
 	local swidth = width
 	local sheight = height
-	
+
 	if self.vbar then
 		swidth = swidth - self:GetVerticalScrollBody():GetWidth()
 	end
-	
+
 	if self.hbar then
 		sheight = sheight - self:GetHorizontalScrollBody():GetHeight()
 	end
-	
-	local stencilfunc = function() love.graphics.rectangle("fill", x, y, swidth, sheight) end
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
-	love.graphics.setStencil(stencilfunc)
-	
+
+	love.graphics.setScissor(x, y, swidth, sheight)
+
 	for k, v in ipairs(self.children) do
 		local col = loveframes.util.BoundingBox(self.x, v.x, self.y, v.y, width, v.width, height, v.height)
 		if col then
 			v:draw()
 		end
 	end
-	
-	love.graphics.setStencil()
-	
+
+	love.graphics.setScissor()
+
 	for k, v in ipairs(self.internals) do
 		v:draw()
 	end
-	
+
 	if not draw then
 		skin.DrawOverColumnListArea(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -160,48 +157,46 @@ end
 function newobject:mousepressed(x, y, button)
 
 	local scrollamount = self.mousewheelscrollamount
-	
-	if self.hover and button == "l" then
+
+	if self.hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
 		end
 	end
-	
-	local bar = false 
-	if self.vbar and self.hbar then
-		bar = self:GetVerticalScrollBody():GetScrollBar()
-	elseif self.vbar and not self.hbar then
-		bar = self:GetVerticalScrollBody():GetScrollBar()
-	elseif not self.var and self.hbar then
-		bar = self:GetHorizontalScrollBody():GetScrollBar()
-	end
-	
-	if self:IsTopList() and bar then
-		if self.dtscrolling then
-			local dt = love.timer.getDelta()
-			if button == "wu" then
-				bar:Scroll(-scrollamount * dt)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount * dt)
-			end
-		else
-			if button == "wu" then
-				bar:Scroll(-scrollamount)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount)
-			end
-		end
-	end
-	
+
 	for k, v in ipairs(self.internals) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 	for k, v in ipairs(self.children) do
 		v:mousepressed(x, y, button)
 	end
-	
+
+end
+
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the mouse wheel is moved
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local bar = false
+	if self.vbar and self.hbar then
+		local hbar = self:GetHorizontalScrollBody():GetScrollBar()
+		local vbar = self:GetVerticalScrollBody():GetScrollBar()
+
+		bar = loveframes.hoverobject == hbar and hbar or vbar
+	elseif self.vbar and not self.hbar then
+		bar = self:GetVerticalScrollBody():GetScrollBar()
+	elseif not self.vbar and self.hbar then
+		bar = self:GetHorizontalScrollBody():GetScrollBar()
+	end
+
+	if self:IsTopList() and bar then
+		bar:Scroll(-y)
+	end
+
 end
 
 --[[---------------------------------------------------------
@@ -212,11 +207,11 @@ function newobject:mousereleased(x, y, button)
 
 	local internals = self.internals
 	local children  = self.children
-	
+
 	for k, v in ipairs(internals) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
 	end
@@ -228,25 +223,25 @@ end
 	- desc: calculates the size of the object's children
 --]]---------------------------------------------------------
 function newobject:CalculateSize()
-	
+
 	local height = self.height
 	local width = self.width
 	local parent = self.parent
-	local itemheight = parent.columnheight  
-	
+	local itemheight = parent.columnheight
+
 	for k, v in ipairs(self.children) do
 		itemheight = itemheight + v.height
 	end
-	
+
 	self.itemheight = itemheight
 	self.itemwidth = parent:GetTotalColumnWidth()
-	
+
 	local hbarheight = 0
 	local hbody = self:GetHorizontalScrollBody()
 	if hbody then
 		hbarheight = hbody.height
 	end
-	
+
 	if self.itemheight > (height - hbarheight) then
 		if hbody then
 			self.itemheight = self.itemheight + hbarheight
@@ -267,13 +262,13 @@ function newobject:CalculateSize()
 			self.offsety = 0
 		end
 	end
-	
+
 	local vbarwidth = 0
 	local vbody = self:GetVerticalScrollBody()
 	if vbody then
 		vbarwidth = vbody.width
 	end
-	
+
 	if self.itemwidth > (width - vbarwidth) then
 		if vbody then
 			self.itemwidth = self.itemwidth + vbarwidth
@@ -296,7 +291,7 @@ function newobject:CalculateSize()
 			self.offsetx = 0
 		end
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -304,10 +299,10 @@ end
 	- desc: used to redo the layour of the object
 --]]---------------------------------------------------------
 function newobject:RedoLayout()
-	
+
 	local starty = 0
 	self.rowcolorindex = 1
-	
+
 	for k, v in ipairs(self.children) do
 		v:SetWidth(self.parent:GetTotalColumnWidth())
 		v.staticx = 0
@@ -339,7 +334,7 @@ function newobject:RedoLayout()
 			self.rowcolorindex = self.rowcolorindex + 1
 		end
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -349,18 +344,18 @@ end
 function newobject:AddRow(data)
 
 	local colorindex = self.rowcolorindex
-	
+
 	if colorindex == self.rowcolorindexmax then
 		self.rowcolorindex = 1
 	else
 		self.rowcolorindex = colorindex + 1
 	end
-	
+
 	table.insert(self.children, loveframes.objects["columnlistrow"]:new(self, data))
 	self:CalculateSize()
 	self:RedoLayout()
 	self.parent:PositionColumns()
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -368,13 +363,13 @@ end
 	- desc: gets the object's scroll bar
 --]]---------------------------------------------------------
 function newobject:GetScrollBar()
-	
+
 	if self.bar then
 		return self.internals[1].internals[1].internals[1]
 	else
 		return false
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -382,10 +377,10 @@ end
 	- desc: sorts the object's children
 --]]---------------------------------------------------------
 function newobject:Sort(column, desc)
-	
+
 	local children = self.children
 	self.rowcolorindex = 1
-	
+
 	table.sort(children, function(a, b)
 		if desc then
             return (tostring(a.columndata[column]) or a.columndata[column]) < (tostring(b.columndata[column]) or b.columndata[column])
@@ -393,7 +388,7 @@ function newobject:Sort(column, desc)
 			return (tostring(a.columndata[column]) or a.columndata[column]) > (tostring(b.columndata[column]) or b.columndata[column])
 		end
 	end)
-	
+
 	for k, v in ipairs(children) do
 		local colorindex = self.rowcolorindex
 		v.colorindex = colorindex
@@ -403,10 +398,10 @@ function newobject:Sort(column, desc)
 			self.rowcolorindex = colorindex + 1
 		end
 	end
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -420,7 +415,7 @@ function newobject:Clear()
 	self:RedoLayout()
 	self.parent:PositionColumns()
 	self.rowcolorindex = 1
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -434,9 +429,9 @@ function newobject:GetVerticalScrollBody()
 			return v
 		end
 	end
-	
+
 	return false
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -450,7 +445,7 @@ function newobject:GetHorizontalScrollBody()
 			return v
 		end
 	end
-	
+
 	return false
-	
+
 end

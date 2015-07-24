@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("button", "loveframes_object_button", tru
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
+
 	self.type = "button"
 	self.text = "Button"
 	self.width = 80
@@ -27,7 +27,13 @@ function newobject:initialize()
 	self.toggleable = false
 	self.toggle = false
 	self.OnClick = nil
-	
+
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.height = directives.button_height or self.height
+	end
+
 end
 
 --[[---------------------------------------------------------
@@ -35,32 +41,32 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local hover = self.hover
 	local down = self.down
 	local downobject = loveframes.downobject
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	if not hover then
 		self.down = false
 		if downobject == self then
@@ -71,13 +77,13 @@ function newobject:update(dt)
 			self.down = true
 		end
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -89,16 +95,16 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
@@ -111,16 +117,16 @@ function newobject:draw()
 	local drawfunc = skin.DrawButton or skins[defaultskin].DrawButton
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -131,20 +137,20 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -152,7 +158,7 @@ function newobject:mousepressed(x, y, button)
 		self.down = true
 		loveframes.downobject = self
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -160,27 +166,27 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local down = self.down
 	local clickable = self.clickable
 	local enabled = self.enabled
 	local onclick = self.OnClick
-	
-	if hover and down and clickable and button == "l" then
+
+	if hover and down and clickable and button == 1 then
 		if enabled then
 			if onclick then
 				onclick(self, x, y)
@@ -194,7 +200,7 @@ function newobject:mousereleased(x, y, button)
 			end
 		end
 	end
-	
+
 	self.down = false
 
 end
@@ -207,7 +213,7 @@ function newobject:SetText(text)
 
 	self.text = text
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -217,7 +223,7 @@ end
 function newobject:GetText()
 
 	return self.text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -228,7 +234,7 @@ function newobject:SetClickable(bool)
 
 	self.clickable = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -238,7 +244,7 @@ end
 function newobject:GetClickable()
 
 	return self.clickable
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -249,7 +255,7 @@ function newobject:SetEnabled(bool)
 
 	self.enabled = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -259,7 +265,7 @@ end
 function newobject:GetEnabled()
 
 	return self.enabled
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -270,7 +276,7 @@ end
 function newobject:GetDown()
 
 	return self.down
-	
+
 end
 
 --[[---------------------------------------------------------

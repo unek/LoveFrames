@@ -37,7 +37,7 @@ function newobject:initialize(parent, bartype)
 	self.dragging = false
 	self.autoscroll = false
 	self.internal = true
-	
+
 	if self.bartype == "vertical" then
 		self.width = self.parent.width
 		self.height = 5
@@ -45,10 +45,10 @@ function newobject:initialize(parent, bartype)
 		self.width = 5
 		self.height = self.parent.height
 	end
-	
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -56,30 +56,30 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local x, y     = love.mouse.getPosition()
 	local bartype  = self.bartype
 	local cols     = {}
 	local basecols = {}
 	local dragging = self.dragging
-	
+
 	if bartype == "vertical" then
 		self.width 		= self.parent.width
 	elseif bartype == "horizontal" then
 		self.height 	= self.parent.height
 	end
-	
+
 	if bartype == "vertical" then
 		local parent = self.parent
 		local listo = parent.parent.parent
@@ -170,7 +170,7 @@ function newobject:update(dt)
 			self.staticx = space
 			listo.offsetx = listo.extrawidth
 		end
-					
+
 		if self.staticx < 0 then
 			self.staticx = 0
 			listo.offsetx = 0
@@ -182,11 +182,11 @@ function newobject:update(dt)
 			end
 		end
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -196,11 +196,11 @@ end
 function newobject:draw()
 
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
@@ -209,16 +209,16 @@ function newobject:draw()
 	local drawfunc = skin.DrawScrollBar or skins[defaultskin].DrawScrollBar
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -229,25 +229,25 @@ function newobject:mousepressed(x, y, button)
 
 	local visible = self.visible
 	local hover = self.hover
-	
+
 	if not visible then
 		return
 	end
-	
+
 	if not hover then
 		return
 	end
-	
+
 	local baseparent = self:GetBaseParent()
-	
+
 	if baseparent.type == "frame" then
 		baseparent:MakeTop()
 	end
-	
+
 	local dragging = self.dragging
-	
+
 	if not dragging then
-		if button == "l" then
+		if button == 1 then
 			self.starty = self.staticy
 			self.startx = self.staticx
 			self.clickx = x
@@ -266,11 +266,11 @@ end
 function newobject:mousereleased(x, y, button)
 
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	if self.dragging then
 		self.dragging = false
 	end
@@ -284,7 +284,7 @@ end
 function newobject:SetMaxX(x)
 
 	self.maxx = x
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -294,7 +294,7 @@ end
 function newobject:SetMaxY(y)
 
 	self.maxy = y
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -306,7 +306,7 @@ function newobject:Scroll(amount)
 	local bartype = self.bartype
 	local listo = self.parent.parent.parent
 	local onscroll = listo.OnScroll
-	
+
 	if bartype == "vertical" then
 		local newy = (self.y + amount)
 		if newy > self.maxy then
@@ -326,11 +326,11 @@ function newobject:Scroll(amount)
 			self.staticx = self.staticx + amount
 		end
 	end
-	
+
 	if onscroll then
 		onscroll(listo)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -362,11 +362,11 @@ function newobject:ScrollTo(position)
 			self.staticx = position * maxRealPos
 		end
 	end
-	
+
 	if onscroll then
 		onscroll(listo)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -376,7 +376,7 @@ end
 function newobject:IsDragging()
 
 	return self.dragging
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -386,5 +386,5 @@ end
 function newobject:GetBarType()
 
 	return self.bartype
-	
+
 end

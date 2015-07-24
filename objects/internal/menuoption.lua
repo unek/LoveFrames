@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("menuoption", "loveframes_object_menuopti
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize(parent, option_type, menu)
-	
+
 	self.type = "menuoption"
 	self.text = "Option"
 	self.width = 100
@@ -29,7 +29,10 @@ function newobject:initialize(parent, option_type, menu)
 	self.internal = true
 	self.icon = false
 	self.func = nil
-	
+
+	self.appear = 0
+	self.delay = 1
+
 end
 
 --[[---------------------------------------------------------
@@ -37,46 +40,55 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local hover = self.hover
 	local parent = self.parent
 	local option_type = self.option_type
 	local activated = self.activated
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	if option_type == "submenu_activator" then
 		if hover and not activated then
-			self.menu:SetVisible(true)
-			self.menu:MoveToTop()
-			self.activated = true
+			self.appear = self.appear + dt
 		elseif not hover and activated then
 			local hoverobject = loveframes.hoverobject
 			if hoverobject and hoverobject:GetBaseParent() == self.parent then
 				self.menu:SetVisible(false)
 				self.activated = false
 			end
-		elseif activated then
-			local screen_width = love.graphics.getWidth()
-			local screen_height = love.graphics.getHeight()
+
+			self.appear = 0
+		elseif not hover then
+			self.appear = 0
+		end
+
+		if self.appear >= self.delay and not activated then
+			self.menu:SetVisible(true)
+			self.menu:MoveToTop()
+			self.activated = true
+		end
+
+		if self.activated then
+			local screen_width, screen_height = love.graphics.getDimensions()
 			local sx = self.x
 			local sy = self.y
 			local width = self.width
@@ -92,15 +104,18 @@ function newobject:update(dt)
 			else
 				self.menu.y = (sy + height) - self.menu.height
 			end
+
+			self.menu.staticx = self.menu.x
+			self.menu.staticy = self.menu.y
 		end
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -112,16 +127,16 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
@@ -134,16 +149,16 @@ function newobject:draw()
 	local drawfunc = skin.DrawMenuOption or skins[defaultskin].DrawMenuOption
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -154,17 +169,17 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -172,23 +187,25 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local option_type = self.option_type
-	if hover and option_type ~= "divider" and button == "l" then
+	if hover and option_type == "submenu_activator" then
+		self.appear = self.delay
+	elseif hover and option_type ~= "divider" and button == 1 then
 		local func = self.func
 		if func then
 			local text = self.text
@@ -207,7 +224,7 @@ end
 function newobject:SetText(text)
 
 	self.text = text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -217,7 +234,7 @@ end
 function newobject:GetText()
 
 	return self.text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -231,7 +248,7 @@ function newobject:SetIcon(icon)
 	elseif type(icon) == "userdata" then
 		self.icon = icon
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -241,7 +258,7 @@ end
 function newobject:GetIcon()
 
 	return self.icon
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -251,5 +268,5 @@ end
 function newobject:SetFunction(func)
 
 	self.func = func
-	
+
 end

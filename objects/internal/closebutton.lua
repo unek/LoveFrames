@@ -23,11 +23,22 @@ function newobject:initialize()
 	self.hover = false
 	self.down = false
 	self.autoposition = true
+	self.marginright = 4
+	self.margintop = 4
 	self.OnClick = function() end
-	
+
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.marginright = directives.closebutton_margin_right or self.marginright
+		self.margintop = directives.closebutton_margin_top or self.margintop
+		self.width = directives.closebutton_width or self.width
+		self.height = directives.closebutton_height or self.height
+	end
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -35,25 +46,25 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local hover = self.hover
 	local down = self.down
 	local downobject = loveframes.downobject
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	if not hover then
 		self.down = false
 	else
@@ -61,22 +72,22 @@ function newobject:update(dt)
 			self.down = true
 		end
 	end
-	
+
 	if not down and downobject == self then
 		self.hover = true
 	end
-	
+
 	if self.autoposition then
-		self.staticx = self.parent.width - self.width - 4
-		self.staticy = 4
+		self.staticx = self.parent.width - self.width - self.marginright
+		self.staticy = self.margintop
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = parent.x + self.staticx
 		self.y = parent.y + self.staticy
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -88,13 +99,13 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
@@ -102,16 +113,16 @@ function newobject:draw()
 	local skin = skins[selfskin] or skins[skinindex]
 	local drawfunc = skin.DrawCloseButton or skins[defaultskin].DrawCloseButton
 	local draw = self.Draw
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -119,16 +130,16 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -136,7 +147,7 @@ function newobject:mousepressed(x, y, button)
 		self.down = true
 		loveframes.downobject = self
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -144,44 +155,44 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local onclick = self.OnClick
-	
+
 	if hover and self.down then
-		if button == "l" then
+		if button == 1 then
 			onclick(x, y, self)
 		end
 	end
-	
+
 	self.down = false
 
 end
 
 --[[---------------------------------------------------------
 	- func: SetAutoPosition(bool)
-	- desc: sets whether or not the object should be 
+	- desc: sets whether or not the object should be
 			positioned automatically
 --]]---------------------------------------------------------
 function newobject:SetAutoPosition(bool)
 
 	self.autoposition = bool
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: GetAutoPosition()
-	- desc: gets whether or not the object should be 
+	- desc: gets whether or not the object should be
 			positioned automatically
 --]]---------------------------------------------------------
 function newobject:GetAutoPosition()
 
 	return self.autoposition
-	
+
 end

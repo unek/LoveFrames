@@ -38,25 +38,25 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local hover = self.hover
 	local internals = self.internals
 	local boxwidth = self.boxwidth
@@ -64,7 +64,7 @@ function newobject:update(dt)
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	if not hover then
 		self.down = false
 	else
@@ -72,17 +72,17 @@ function newobject:update(dt)
 			self.down = true
 		end
 	end
-	
+
 	if not self.down and loveframes.downobject == self then
 		self.hover = true
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base and parent.type ~= "list" then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	if internals[1] then
 		self.width = boxwidth + 5 + internals[1].width
 		if internals[1].height == boxheight then
@@ -98,11 +98,11 @@ function newobject:update(dt)
 		self.width = boxwidth
 		self.height = boxheight
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -114,16 +114,16 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
@@ -137,20 +137,20 @@ function newobject:draw()
 	local draw = self.Draw
 	local internals = self.internals
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -161,20 +161,20 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -182,7 +182,7 @@ function newobject:mousepressed(x, y, button)
 		self.down = true
 		loveframes.downobject = self
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -190,22 +190,22 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	if loveframes.state ~= self.state then
 		return
 	end
-	
+
 	if not self.visible then
 		return
 	end
-	
-	if self.hover and self.down and self.enabled and button == "l" then
+
+	if self.hover and self.down and self.enabled and button == 1 then
 		if not self.checked then
 			-- a radio button can only be unchecked by checking another radio button
 			self:SetChecked(true)
 		end
 	end
-		
+
 end
 
 --[[---------------------------------------------------------
@@ -216,7 +216,7 @@ function newobject:SetText(text)
 
 	local boxwidth = self.boxwidth
 	local boxheight = self.boxheight
-	
+
 	if text ~= "" then
 		self.internals = {}
 		local textobject = loveframes.Create("text")
@@ -258,9 +258,9 @@ function newobject:SetText(text)
 		self.height = boxheight
 		self.internals = {}
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -271,13 +271,13 @@ function newobject:GetText()
 
 	local internals = self.internals
 	local text = internals[1]
-	
+
 	if text then
 		return text.text
 	else
 		return false
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -291,15 +291,15 @@ function newobject:SetSize(width, height, r1, r2)
 	else
 		self.boxwidth = width
 	end
-	
+
 	if r2 then
 		self.boxheight = self.parent.height * height
 	else
 		self.boxheight = height
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -313,9 +313,9 @@ function newobject:SetWidth(width, relative)
 	else
 		self.boxwidth = width
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -329,9 +329,9 @@ function newobject:SetHeight(height, relative)
 	else
 		self.boxheight = height
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -352,9 +352,9 @@ function newobject:SetChecked(checked)
 			end
 		end
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -364,19 +364,19 @@ end
 function newobject:GetChecked()
 
 	return self.checked
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: SetGroup()
-	- desc: set the object's group. only one radio button in a 
+	- desc: set the object's group. only one radio button in a
 					group is checked at a time.
 --]]---------------------------------------------------------
 function newobject:SetGroup(group)
-	
+
 	self.group = group
 	self.group[self] = self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -386,7 +386,7 @@ end
 function newobject:GetGroup(group)
 
 	return self.group
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -397,15 +397,15 @@ function newobject:SetFont(font)
 
 	local internals = self.internals
 	local text = internals[1]
-	
+
 	self.font = font
-	
+
 	if text then
 		text:SetFont(font)
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -425,7 +425,7 @@ end
 function newobject:GetBoxSize()
 
 	return self.boxwidth, self.boxheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -435,7 +435,7 @@ end
 function newobject:GetBoxWidth()
 
 	return self.boxwidth
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -445,7 +445,7 @@ end
 function newobject:GetBoxHeight()
 
 	return self.boxheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -456,7 +456,7 @@ function newobject:SetEnabled(bool)
 
 	self.enabled = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -466,5 +466,5 @@ end
 function newobject:GetEnabled()
 
 	return self.enabled
-	
+
 end

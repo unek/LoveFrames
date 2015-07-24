@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("grid", "loveframes_object_grid", true)
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
+
 	self.type = "grid"
 	self.width = 100
 	self.height = 100
@@ -29,7 +29,7 @@ function newobject:initialize()
 	self.itemautosize = false
 	self.children = {}
 	self.OnSizeChanged = nil
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -37,43 +37,43 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local parent = self.parent
 	local children = self.children
 	local base = loveframes.base
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	local cw = self.cellwidth + (self.cellpadding * 2)
 	local ch = self.cellheight + (self.cellpadding * 2)
 	local prevwidth = self.prevwidth
 	local prevheight = self.prevheight
-		
+
 	self.width = (self.columns * self.cellwidth) + (self.columns * (self.cellpadding * 2))
 	self.height = (self.rows * self.cellheight) + (self.rows * (self.cellpadding * 2))
-	
+
 	if self.width ~= prevwidth or self.height ~= prevheight then
 		local onsizechanged = self.OnSizeChanged
 		self.prevwidth = self.width
@@ -82,7 +82,7 @@ function newobject:update(dt)
 			onsizechanged(self)
 		end
 	end
-	
+
 	for k, v in ipairs(children) do
 		local x = 0 + ((cw * v.gridcolumn) - cw ) + (cw/2 - v.width/2)
 		local y = 0 + ((ch * v.gridrow) - ch) + (ch/2 - v.height/2)
@@ -90,7 +90,7 @@ function newobject:update(dt)
 		v.staticy = y
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -102,16 +102,16 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
@@ -125,20 +125,20 @@ function newobject:draw()
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
 	local children = self.children
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -149,31 +149,31 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local children = self.children
 	local hover = self.hover
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
 		end
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -184,22 +184,22 @@ function newobject:mousereleased(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible  = self.visible
 	local children = self.children
-	
+
 	if not visible then
 		return
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -210,23 +210,23 @@ function newobject:AddItem(object, row, column)
 
 	local itemautosize = self.itemautosize
 	local children = self.children
-	
+
 	object:Remove()
-	
+
 	table.insert(children, object)
 	object.parent = self
 	object.gridrow = row
 	object.gridcolumn = column
-	
+
 	if itemautosize then
 		local cw = self.cellwidth + (self.cellpadding * 2)
 		local ch = self.cellheight + (self.cellpadding * 2)
 		object.width = cw - (self.cellpadding * 2)
 		object.height = ch - (self.cellpadding * 2)
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -237,15 +237,15 @@ end
 function newobject:GetItem(row, column)
 
 	local children = self.children
-	
+
 	for k, v in ipairs(children) do
 		if v.gridrow == row and v.gridcolumn == column then
 			return v
 		end
 	end
-	
+
 	return false
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -257,7 +257,7 @@ function newobject:SetItemAutoSize(bool)
 
 	self.itemautosize = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -268,7 +268,7 @@ end
 function newobject:GetItemAutoSize()
 
 	return self.itemautosize
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -279,7 +279,7 @@ function newobject:SetRows(rows)
 
 	self.rows = rows
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -289,7 +289,7 @@ end
 function newobject:GetRows()
 
 	return self.rows
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -301,7 +301,7 @@ function newobject:SetColumns(columns)
 
 	self.columns = columns
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -311,7 +311,7 @@ end
 function newobject:GetColumns()
 
 	return self.columns
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -322,7 +322,7 @@ function newobject:SetCellWidth(width)
 
 	self.cellwidth = width
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -343,7 +343,7 @@ function newobject:SetCellHeight(height)
 
 	self.cellheight = height
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -353,7 +353,7 @@ end
 function newobject:GetCellHeight()
 
 	return self.cellheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -365,7 +365,7 @@ function newobject:SetCellSize(width, height)
 	self.cellwidth = width
 	self.cellheight = height
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -375,7 +375,7 @@ end
 function newobject:GetCellSize()
 
 	return self.cellwidth, self.cellheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -386,7 +386,7 @@ function newobject:SetCellPadding(padding)
 
 	self.cellpadding = padding
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -396,5 +396,5 @@ end
 function newobject:GetCellPadding()
 
 	return self.cellpadding
-	
+
 end

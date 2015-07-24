@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("list", "loveframes_object_list", true)
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
+
 	self.type = "list"
 	self.display = "vertical"
 	self.width = 300
@@ -35,11 +35,10 @@ function newobject:initialize()
 	self.vbar = false
 	self.autoscroll = false
 	self.horizontalstacking = false
-	self.dtscrolling = false
 	self.internals = {}
 	self.children = {}
 	self.OnScroll = nil
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -47,25 +46,25 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate 	= self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local internals = self.internals
 	local children = self.children
 	local display = self.display
@@ -73,13 +72,13 @@ function newobject:update(dt)
 	local horizontalstacking = self.horizontalstacking
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:update(dt)
 		for _, p in pairs(self:GetParents()) do
@@ -87,14 +86,14 @@ function newobject:update(dt)
 			v.y = v.y - (p.offsety or 0)
 		end
 	end
-	
+
 	local x = self.x
 	local y = self.y
 	local width = self.width
 	local height = self.height
 	local offsetx = self.offsetx
 	local offsety = self.offsety
-	
+
 	for k, v in ipairs(children) do
 		v:update(dt)
 		v:SetClickBounds(x, y, width, height)
@@ -111,11 +110,11 @@ function newobject:update(dt)
 			end
 		end
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -123,16 +122,16 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
@@ -141,7 +140,6 @@ function newobject:draw()
 	local y = self.y
 	local width = self.width
 	local height = self.height
-	local stencilfunc = function() love.graphics.rectangle("fill", x, y, width, height) end
 	local internals = self.internals
 	local children = self.children
 	local skins = loveframes.skins.available
@@ -153,35 +151,35 @@ function newobject:draw()
 	local drawoverfunc = skin.DrawOverList or skins[defaultskin].DrawOverList
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-	
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
-	love.graphics.setStencil(stencilfunc)
-		
+
+	love.graphics.setScissor(x, y, width, heightc)
+
 	for k, v in ipairs(children) do
 		local col = loveframes.util.BoundingBox(x, v.x, y, v.y, width, v.width, height, v.height)
 		if col then
 			v:draw()
 		end
 	end
-	
-	love.graphics.setStencil()
-	
+
+	love.graphics.setScissor()
+
 	for k, v in ipairs(internals) do
 		v:draw()
 	end
-	
+
 	if not draw then
 		drawoverfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -189,20 +187,20 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local toplist = self:IsTopList()
 	local hover = self.hover
 	local vbar = self.vbar
@@ -210,41 +208,44 @@ function newobject:mousepressed(x, y, button)
 	local scrollamount = self.mousewheelscrollamount
 	local children = self.children
 	local internals = self.internals
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
 		end
 	end
-	
-	if vbar or hbar then
-		if toplist then
-			local bar = self:GetScrollBar()
-			local dtscrolling = self.dtscrolling
-			if dtscrolling then
-				local dt = love.timer.getDelta()
-				if button == "wu" then
-					bar:Scroll(-scrollamount * dt)
-				elseif button == "wd" then
-					bar:Scroll(scrollamount * dt)
-				end
-			else
-				if button == "wu" then
-					bar:Scroll(-scrollamount)
-				elseif button == "wd" then
-					bar:Scroll(scrollamount)
-				end
-			end
-		end
-	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousepressed(x, y, button)
+	end
+
+end
+
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the mouse wheel is moved
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local bar = false
+	if self.vbar and self.hbar then
+		local hbar = self:GetHorizontalScrollBody():GetScrollBar()
+		local vbar = self:GetVerticalScrollBody():GetScrollBar()
+
+		bar = loveframes.hoverobject == hbar and hbar or vbar
+	elseif self.vbar and not self.hbar then
+		bar = self:GetVerticalScrollBody():GetScrollBar()
+	elseif not self.vbar and self.hbar then
+		bar = self:GetHorizontalScrollBody():GetScrollBar()
+	end
+
+	if self:IsTopList() and bar then
+		bar:Scroll(-y)
 	end
 
 end
@@ -254,7 +255,7 @@ end
 	- desc: adds an item to the object
 --]]---------------------------------------------------------
 function newobject:AddItem(object)
-	
+
 	local objtype = object.type
 	if objtype == "frame" then
 		return
@@ -262,21 +263,21 @@ function newobject:AddItem(object)
 
 	local children = self.children
 	local state = self.state
-	
+
 	-- remove the item object from its current parent and make its new parent the list object
 	object:Remove()
 	object.parent = self
 	object:SetState(state)
-	
+
 	-- insert the item object into the list object's children table
 	table.insert(children, object)
-	
+
 	-- resize the list and redo its layout
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -286,7 +287,7 @@ end
 function newobject:RemoveItem(data)
 
 	local dtype = type(data)
-	
+
 	if dtype == "number" then
 		local children = self.children
 		local item = children[data]
@@ -296,12 +297,12 @@ function newobject:RemoveItem(data)
 	else
 		data:Remove()
 	end
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -309,7 +310,7 @@ end
 	- desc: calculates the size of the object's children
 --]]---------------------------------------------------------
 function newobject:CalculateSize()
-	
+
 	local numitems = #self.children
 	local height = self.height
 	local width = self.width
@@ -323,7 +324,7 @@ function newobject:CalculateSize()
 	local internals = self.internals
 	local children = self.children
 	local horizontalstacking = self.horizontalstacking
-	
+
 	if display == "vertical" then
 		if horizontalstacking then
 			local curwidth = 0
@@ -395,9 +396,9 @@ function newobject:CalculateSize()
 			end
 		end
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -405,7 +406,7 @@ end
 	- desc: used to redo the layout of the object
 --]]---------------------------------------------------------
 function newobject:RedoLayout()
-	
+
 	local width = self.width
 	local height = self.height
 	local children = self.children
@@ -419,13 +420,13 @@ function newobject:RedoLayout()
 	local display = self.display
 	local horizontalstacking = self.horizontalstacking
 	local scrollbody, scrollbodywidth, scrollbodyheight
-	
+
 	if vbar or hbar then
 		scrollbody = internals[1]
 		scrollbodywidth = scrollbody.width
 		scrollbodyheight = scrollbody.height
 	end
-	
+
 	if #children > 0 then
 		if display == "vertical" then
 			if horizontalstacking then
@@ -506,9 +507,9 @@ function newobject:RedoLayout()
 			end
 		end
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -519,19 +520,19 @@ function newobject:SetDisplayType(type)
 
 	local children = self.children
 	local numchildren 	= #children
-	
+
 	self.display = type
 	self.vbar = false
 	self.hbar = false
 	self.offsetx = 0
 	self.offsety = 0
 	self.internals = {}
-	
+
 	if numchildren > 0 then
 		self:CalculateSize()
 		self:RedoLayout()
 	end
-	
+
 	return self
 
 end
@@ -543,7 +544,7 @@ end
 function newobject:GetDisplayType()
 
 	return self.display
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -554,16 +555,16 @@ function newobject:SetPadding(amount)
 
 	local children = self.children
 	local numchildren = #children
-	
+
 	self.padding = amount
-	
+
 	if numchildren > 0 then
 		self:CalculateSize()
 		self:RedoLayout()
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -574,16 +575,16 @@ function newobject:SetSpacing(amount)
 
 	local children = self.children
 	local numchildren = #children
-	
+
 	self.spacing = amount
-	
+
 	if numchildren > 0 then
 		self:CalculateSize()
 		self:RedoLayout()
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -591,11 +592,11 @@ end
 	- desc: removes all of the object's children
 --]]---------------------------------------------------------
 function newobject:Clear()
-	
+
 	self.children = {}
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 	return self
 
 end
@@ -611,12 +612,12 @@ function newobject:SetWidth(width, relative)
 	else
 		self.width = width
 	end
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -630,12 +631,12 @@ function newobject:SetHeight(height, relative)
 	else
 		self.height = height
 	end
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -649,18 +650,18 @@ function newobject:SetSize(width, height, r1, r2)
 	else
 		self.width = width
 	end
-	
+
 	if r2 then
 		self.height = self.parent.height * height
 	else
 		self.height = height
 	end
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -672,7 +673,7 @@ function newobject:GetScrollBar()
 	local vbar = self.vbar
 	local hbar = self.hbar
 	local internals  = self.internals
-	
+
 	if vbar or hbar then
 		local scrollbody = internals[1]
 		local scrollarea = scrollbody.internals[1]
@@ -681,7 +682,7 @@ function newobject:GetScrollBar()
 	else
 		return false
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -693,15 +694,15 @@ end
 function newobject:SetAutoScroll(bool)
 
 	local scrollbar = self:GetScrollBar()
-	
+
 	self.autoscroll = bool
-	
+
 	if scrollbar then
 		scrollbar.autoscroll = bool
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -713,7 +714,7 @@ end
 function newobject:GetAutoScroll()
 
 	return self.autoscroll
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -725,7 +726,7 @@ function newobject:SetButtonScrollAmount(amount)
 
 	self.buttonscrollamount = amount
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -736,7 +737,7 @@ end
 function newobject:GetButtonScrollAmount()
 
 	return self.buttonscrollamount
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -747,7 +748,7 @@ function newobject:SetMouseWheelScrollAmount(amount)
 
 	self.mousewheelscrollamount = amount
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -757,7 +758,7 @@ end
 function newobject:GetButtonScrollAmount()
 
 	return self.mousewheelscrollamount
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -768,16 +769,16 @@ function newobject:EnableHorizontalStacking(bool)
 
 	local children = self.children
 	local numchildren = #children
-	
+
 	self.horizontalstacking = bool
-	
+
 	if numchildren > 0 then
 		self:CalculateSize()
 		self:RedoLayout()
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -788,28 +789,5 @@ end
 function newobject:GetHorizontalStacking()
 
 	return self.horizontalstacking
-	
-end
 
---[[---------------------------------------------------------
-	- func: SetDTScrolling(bool)
-	- desc: sets whether or not the object should use delta
-			time when scrolling
---]]---------------------------------------------------------
-function newobject:SetDTScrolling(bool)
-
-	self.dtscrolling = bool
-	return self
-	
-end
-
---[[---------------------------------------------------------
-	- func: GetDTScrolling()
-	- desc: gets whether or not the object should use delta
-			time when scrolling
---]]---------------------------------------------------------
-function newobject:GetDTScrolling()
-
-	return self.dtscrolling
-	
 end

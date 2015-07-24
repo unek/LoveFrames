@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("columnlistheader", "loveframes_object_co
 	- desc: intializes the element
 --]]---------------------------------------------------------
 function newobject:initialize(name, parent)
-	
+
 	self.type = "columnlistheader"
 	self.parent = parent
 	self.name = name
@@ -32,15 +32,15 @@ function newobject:initialize(name, parent)
 	self.internal = true
 
 	table.insert(parent.children, self)
-		
+
 	local key = 0
-	
+
 	for k, v in ipairs(parent.children) do
 		if v == self then
 			key = k
 		end
 	end
-	
+
 	self.OnClick = function(object)
 		local descending = object.descending
 		local parent = object.parent
@@ -53,10 +53,10 @@ function newobject:initialize(name, parent)
 		end
 		list:Sort(key, object.descending)
 	end
-	
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -64,13 +64,13 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	if not self.visible then
 		if not self.alwaysupdate then
 			return
 		end
 	end
-	
+
 	local update = self.Update
 	local parent = self.parent
 	local list = parent.internals[1]
@@ -79,10 +79,10 @@ function newobject:update(dt)
 	if vbody then
 		width = width - vbody.width
 	end
-	
+
 	self.clickbounds = {x = list.x, y = list.y, width = width, height = list.height}
 	self:CheckHover()
-	
+
 	if not self.hover then
 		self.down = false
 	else
@@ -90,15 +90,15 @@ function newobject:update(dt)
 			self.down = true
 		end
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= loveframes.base then
 		self.x = (parent.x + self.staticx) - parent.internals[1].offsetx
 		self.y = parent.y + self.staticy
 	end
-	
+
 	local resizecolumn = parent.resizecolumn
-	
+
 	if resizecolumn and resizecolumn == self then
 		local x, y = love.mouse.getPosition()
 		local start = false
@@ -113,9 +113,9 @@ function newobject:update(dt)
 		local header = parent.children[self.columnid - 1]
 		self.staticx = header.staticx + header.width
 	end
-	
+
 	self.resizebox = {x = self.x + (self.width - 2), y = self.y, width = 4, height = self.height}
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -131,7 +131,7 @@ function newobject:draw()
 	if not self.visible then
 		return
 	end
-	
+
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
@@ -140,10 +140,10 @@ function newobject:draw()
 	local drawfunc = skin.DrawColumnListHeader or skins[defaultskin].DrawColumnListHeader
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
@@ -157,7 +157,7 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	if not self.parent.resizecolumn and self.parent.canresizecolumns then
 		local box = self.resizebox
 		local col = loveframes.util.BoundingBox(x, box.x, y, box.y, 1, box.width, 1, box.height)
@@ -166,16 +166,16 @@ function newobject:mousepressed(x, y, button)
 			self.parent.resizecolumn = self
 		end
 	end
-	
-	if self.hover and button == "l" then
+
+	if self.hover and button == 1 then
 		local baseparent = self:GetBaseParent()
-		if baseparent and baseparent.type == "frame" and button == "l" then
+		if baseparent and baseparent.type == "frame" and button == 1 then
 			baseparent:MakeTop()
 		end
 		self.down = true
 		loveframes.downobject = self
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -187,26 +187,26 @@ function newobject:mousereleased(x, y, button)
 	if not self.visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local down = self.down
 	local clickable = self.clickable
 	local enabled = self.enabled
 	local onclick = self.OnClick
-	
-	if hover and down and clickable and button == "l" then
+
+	if hover and down and clickable and button == 1 then
 		if enabled then
 			onclick(self, x, y)
 		end
 	end
-	
+
 	local resizecolumn = self.parent.resizecolumn
 	if resizecolumn and resizecolumn == self then
 		self.parent.resizecolumn = nil
 	end
-	
+
 	self.down = false
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -217,7 +217,7 @@ function newobject:SetName(name)
 
 	self.name = name
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -227,5 +227,5 @@ end
 function newobject:GetName()
 
 	return self.name
-	
+
 end

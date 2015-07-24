@@ -15,13 +15,14 @@ local newobject = loveframes.NewObject("tooltip", "loveframes_object_tooltip", t
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize(object, text)
-	
+
 	self.type = "tooltip"
 	self.parent = loveframes.base
 	self.object = object or nil
 	self.width = 0
 	self.height = 0
-	self.padding = 5
+	self.hpadding = 5
+	self.vpadding = 5
 	self.xoffset = 10
 	self.yoffset = -10
 	self.internal = true
@@ -30,7 +31,12 @@ function newobject:initialize(object, text)
 	self.followobject = false
 	self.alwaysupdate = true
 	self.internals = {}
-	
+
+	self.appear = 0
+	self.startmx = nil
+	self.startmy = nil
+	self.delay = 1
+
 	-- create the object's text
 	local textobject = loveframes.Create("text")
 	textobject:Remove()
@@ -38,11 +44,27 @@ function newobject:initialize(object, text)
 	textobject:SetText(text or "")
 	textobject:SetPos(0, 0)
 	table.insert(self.internals, textobject)
-	
+
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.xoffset = directives.tooltip_offset_x or self.xoffset
+		self.yoffset = directives.tooltip_offset_y or self.yoffset
+		self.hpadding = directives.tooltip_padding_x or self.hpadding
+		self.vpadding = directives.tooltip_padding_y or self.vpadding
+
+		if directives.tooltip_font then
+			textobject:SetFont(directives.tooltip_font)
+		end
+		if directives.tooltip_color then
+			textobject:SetColor(directives.tooltip_color)
+		end
+	end
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
 	table.insert(loveframes.base.internals, self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -53,30 +75,31 @@ function newobject:update(dt)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local internals = self.internals
 	local textobject = internals[1]
-	local padding = self.padding
+	local hpadding = self.hpadding
+	local vpadding = self.vpadding
 	local object = self.object
 	local draworder = self.draworder
 	local update = self.Update
-	
-	self.width = textobject.width + padding * 2
-	self.height = textobject.height + padding * 2
-	
+
+	self.width = textobject.width + hpadding * 2
+	self.height = textobject.height + vpadding * 2
+
 	if object then
 		if object == loveframes.base then
 			self:Remove()
@@ -90,20 +113,11 @@ function newobject:update(dt)
 			self.visible = false
 			return
 		end
-		self.show = ohover
-		self.visible = ovisible
 		if ohover and ovisible then
 			local top = self:IsTopInternal()
-			local followcursor = self.followcursor
-			local followobject = self.followobject
 			local xoffset = self.xoffset
 			local yoffset = self.yoffset
-			if followcursor then
-				local height = self.height
-				local mx, my = love.mouse.getPosition()
-				self.x = mx + xoffset
-				self.y = my - height + yoffset
-			elseif followobject then
+			if followobject then
 				local ox = object.x
 				local oy = object.y
 				self.x = ox + xoffset
@@ -112,14 +126,47 @@ function newobject:update(dt)
 			if not top then
 				self:MoveToTop()
 			end
-			textobject:SetPos(padding, padding)
+			textobject:SetPos(hpadding, vpadding)
+		end
+
+		local followcursor = self.followcursor
+		if followcursor then
+			local mx, my = love.mouse.getPosition()
+
+			if ohover and not self.startmx then
+				self.appear = dt
+				self.startmx, self.startmy = love.mouse.getPosition()
+			end
+
+			if mx == self.startmx and my == self.startmy then
+				self.appear = self.appear + dt
+			else
+				self.startmx, self.startmy = mx, my
+				self.appear = 0
+			end
+
+			if self.appear > self.delay then
+				self.show = true
+				self.visible = true
+
+				self.x = mx + self.xoffset
+				self.y = my + self.yoffset
+			else
+				self.show = false
+				self.visible = false
+			end
+
+			if not ohover or not ovisible then
+				self.show = ohover
+				self.visible = ovisible
+			end
 		end
 	end
-	
+
 	textobject:SetVisible(self.show)
 	textobject:SetState(selfstate)
 	textobject:update(dt)
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -131,20 +178,20 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local internals = self.internals
 	local textobject = internals[1]
 	local show = self.show
@@ -156,10 +203,10 @@ function newobject:draw()
 	local drawfunc = skin.DrawToolTip or skins[defaultskin].DrawToolTip
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-	
+
 	if show then
 		if draw then
 			draw(self)
@@ -168,7 +215,7 @@ function newobject:draw()
 		end
 		textobject:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -180,7 +227,7 @@ function newobject:SetFollowCursor(bool)
 
 	self.followcursor = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -191,7 +238,7 @@ end
 function newobject:GetFollowCursor()
 
 	return self.followcursor
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -203,9 +250,9 @@ function newobject:SetObject(object)
 	self.object = object
 	self.x = object.x
 	self.y = object.y
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -215,7 +262,7 @@ end
 function newobject:GetObject()
 
 	return self.object
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -226,10 +273,10 @@ function newobject:SetText(text)
 
 	local internals = self.internals
 	local textobject = internals[1]
-	
+
 	textobject:SetText(text)
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -241,9 +288,9 @@ function newobject:GetText()
 	local internals = self.internals
 	local textobject = internals[1]
 	local text = textobject:GetText()
-	
+
 	return text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -254,10 +301,10 @@ function newobject:SetTextMaxWidth(width)
 
 	local internals = self.internals
 	local textobject = internals[1]
-	
+
 	textobject:SetMaxWidth(width)
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -268,7 +315,7 @@ function newobject:SetOffsetX(xoffset)
 
 	self.xoffset = xoffset
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -278,7 +325,7 @@ end
 function newobject:GetOffsetX()
 
 	return self.xoffset
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -289,7 +336,7 @@ function newobject:SetOffsetY(yoffset)
 
 	self.yoffset = yoffset
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -299,7 +346,7 @@ end
 function newobject:GetOffsetY()
 
 	return self.yoffset
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -310,9 +357,9 @@ function newobject:SetOffsets(xoffset, yoffset)
 
 	self.xoffset = xoffset
 	self.yoffset = yoffset
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -322,18 +369,19 @@ end
 function newobject:GetOffsets()
 
 	return self.xoffset, self.yoffset
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: SetPadding(padding)
 	- desc: sets the tooltip's padding
 --]]---------------------------------------------------------
-function newobject:SetPadding(padding)
+function newobject:SetPadding(h, v)
 
-	self.padding = padding
+	self.hpadding = h
+	self.vpadding = v or h
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -342,8 +390,8 @@ end
 --]]---------------------------------------------------------
 function newobject:GetPadding()
 
-	return self.padding
-	
+	return self.hpadding, self.vpadding
+
 end
 
 --[[---------------------------------------------------------
@@ -354,10 +402,10 @@ function newobject:SetFont(font)
 
 	local internals = self.internals
 	local textobject = internals[1]
-	
+
 	textobject:SetFont(font)
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -368,9 +416,9 @@ function newobject:GetFont()
 
 	local internals = self.internals
 	local textobject = internals[1]
-	
+
 	return textobject:GetFont()
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -382,7 +430,7 @@ function newobject:SetFollowObject(bool)
 
 	self.followobject = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -393,5 +441,18 @@ end
 function newobject:GetFollowObject()
 
 	return self.followobject
-	
+
+end
+
+--[[---------------------------------------------------------
+	- func: mousepressed(x, y, button)
+	- desc: called when the player presses a mouse button
+--]]---------------------------------------------------------
+function newobject:mousepressed(x, y, button)
+
+	if not self.show or not self.visible then return end
+
+	self.appear = 0
+	self.startmx, self.startmy = nil, nil
+
 end

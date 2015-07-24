@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("frame", "loveframes_object_frame", true)
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
+
 	self.type = "frame"
 	self.name = "Frame"
 	self.width = 300
@@ -55,13 +55,15 @@ function newobject:initialize()
 	self.resizing = false
 	self.canresize = false
 	self.alwaysontop = false
+	self.titleheight = 25
+	self.titleheightresizable = 21
 	self.internals = {}
 	self.children = {}
 	self.icon = nil
 	self.OnClose = nil
 	self.OnDock = nil
 	self.OnResize = nil
-	
+
 	-- create docking zones
 	self.dockzones = {
 		top = {x = 0, y = 0, width = 0, height = 0},
@@ -69,7 +71,7 @@ function newobject:initialize()
 		left = {x = 0, y = 0, width = 0, height = 0},
 		right = {x = 0, y = 0, width = 0, height = 0}
 	}
-	
+
 	-- create the close button for the frame
 	local close = loveframes.objects["closebutton"]:new()
 	close.parent = self
@@ -85,9 +87,15 @@ function newobject:initialize()
 			object.parent:Remove()
 		end
 	end
-	
+
 	table.insert(self.internals, close)
-	
+
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.titleheight = directives.frame_title_height or self.titleheight
+	end
+
 end
 
 --[[---------------------------------------------------------
@@ -95,23 +103,23 @@ end
 	- desc: updates the element
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local mx, my = love.mouse.getPosition()
 	local showclose = self.showclose
 	local close = self.internals[1]
@@ -133,15 +141,15 @@ function newobject:update(dt)
 	local internals = self.internals
 	local parent = self.parent
 	local update = self.Update
-	
+
 	self:CheckHover()
-	
+
 	-- update dockzones
 	self.dockzones.top = {x = self.x, y = self.y - dockzonesize, width = self.width, height = dockzonesize}
 	self.dockzones.bottom = {x = self.x, y = self.y + self.height, width = self.width, height = dockzonesize}
 	self.dockzones.left = {x = self.x - dockzonesize, y = self.y, width = dockzonesize, height = self.height}
 	self.dockzones.right = {x = self.x + self.width, y = self.y, width = dockzonesize, height = self.height}
-	
+
 	-- dragging check
 	if dragging then
 		if parent == base then
@@ -320,7 +328,7 @@ function newobject:update(dt)
 			end
 		end
 	end
-	
+
 	-- if screenlocked then keep within screen
 	if screenlocked then
 		local width = self.width
@@ -342,7 +350,7 @@ function newobject:update(dt)
 			self.y = screenheight - height
 		end
 	end
-	
+
 	-- keep the frame within its parent's boundaries if parentlocked
 	if parentlocked then
 		local width = self.width
@@ -364,11 +372,11 @@ function newobject:update(dt)
 			self.staticy = parentheight - height
 		end
 	end
-	
+
 	if parent == base and self.alwaysontop and not self:IsTopChild() then
 		self:MakeTop()
 	end
-	
+
 	if modal then
 		local tip = false
 		local key = 0
@@ -391,20 +399,20 @@ function newobject:update(dt)
 			self.modalbackground:SetState(self.state)
 		end
 	end
-	
+
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:update(dt)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -416,20 +424,20 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local children = self.children
 	local internals = self.internals
 	local skins = loveframes.skins.available
@@ -440,25 +448,25 @@ function newobject:draw()
 	local drawfunc = skin.DrawFrame or skins[defaultskin].DrawFrame
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:draw()
 	end
-	
+
 	-- loop through the object's children and draw them
 	for k, v in ipairs(children) do
 		v:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -466,20 +474,20 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local width = self.width
 	local height = self.height
 	local internals = self.internals
@@ -487,15 +495,15 @@ function newobject:mousepressed(x, y, button)
 	local dragging = self.dragging
 	local parent = self.parent
 	local base = loveframes.base
-	
-	if button == "l" then
+
+	if button == 1 then
 		-- initiate dragging if not currently dragging
 		if not dragging and self.hover and self.draggable  then
 			local topcol
 			if self.canresize then
-				topcol = loveframes.util.BoundingBox(x, self.x + 2, y, self.y + 2, 1, self.width - 4, 1, 21)
+				topcol = loveframes.util.BoundingBox(x, self.x + 2, y, self.y + 2, 1, self.width - 4, 1, self.titleheightresizable)
 			else
-				topcol = loveframes.util.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, 25)
+				topcol = loveframes.util.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, self.titleheight)
 			end
 			if topcol then
 				if parent == base then
@@ -596,7 +604,7 @@ function newobject:mousepressed(x, y, button)
 				self.resizeheight = self.height
 				loveframes.resizeobject = self
 				if y ~= self.y then
-					self.resizeymod = (self.y + self.height) - y 
+					self.resizeymod = (self.y + self.height) - y
 				end
 			elseif loveframes.util.BoundingBox(self.x, x, self.y + 5, y, 2, 1, self.height - 10, 1) then
 				self.resizing = true
@@ -626,19 +634,19 @@ function newobject:mousepressed(x, y, button)
 				end
 			end
 		end
-		if self.hover and button == "l" then
+		if self.hover and button == 1 then
 			self:MakeTop()
 		end
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousepressed(x, y, button)
 	end
-		
+
 	for k, v in ipairs(children) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -646,26 +654,26 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local children = self.children
 	local internals = self.internals
-	
+
 	self.dragging = false
 	loveframes.dragobject = false
-	
+
 	if self.resizing then
 		self.resizex = 0
 		self.resizey = 0
@@ -676,15 +684,15 @@ function newobject:mousereleased(x, y, button)
 		self.resizing = false
 		loveframes.resizeobject = false
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -695,7 +703,7 @@ function newobject:SetName(name)
 
 	self.name = name
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -705,7 +713,7 @@ end
 function newobject:GetName()
 
 	return self.name
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -716,7 +724,7 @@ function newobject:SetDraggable(bool)
 
 	self.draggable = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -726,7 +734,7 @@ end
 function newobject:GetDraggable()
 
 	return self.draggable
-	
+
 end
 
 
@@ -739,7 +747,7 @@ function newobject:SetScreenLocked(bool)
 
 	self.screenlocked = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -750,12 +758,12 @@ end
 function newobject:GetScreenLocked()
 
 	return self.screenlocked
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: ShowCloseButton(bool)
-	- desc: sets whether the object's close button should 
+	- desc: sets whether the object's close button should
 			be drawn
 --]]---------------------------------------------------------
 function newobject:ShowCloseButton(bool)
@@ -765,7 +773,7 @@ function newobject:ShowCloseButton(bool)
 	close.visible = bool
 	self.showclose = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -774,12 +782,12 @@ end
 			order
 --]]---------------------------------------------------------
 function newobject:MakeTop()
-	
+
 	local key = 0
 	local base = loveframes.base
 	local basechildren = base.children
 	local numbasechildren = #basechildren
-	
+
 	-- check to see if the object's parent is not the base object
 	if self.parent ~= base then
 		local baseparent = self:GetBaseParent()
@@ -788,17 +796,17 @@ function newobject:MakeTop()
 		end
 		return self
 	end
-	
+
 	-- check to see if the object is the only child of the base object
 	if numbasechildren == 1 then
 		return self
 	end
-	
+
 	-- check to see if the object is already at the top
 	if basechildren[numbasechildren] == self then
 		return self
 	end
-	
+
 	-- make this the top object
 	for k, v in ipairs(basechildren) do
 		if v == self then
@@ -808,9 +816,9 @@ function newobject:MakeTop()
 			break
 		end
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -824,13 +832,13 @@ function newobject:SetModal(bool)
 	local mbackground = self.modalbackground
 	local parent = self.parent
 	local base = loveframes.base
-	
+
 	if parent ~= base then
 		return
 	end
-	
+
 	self.modal = bool
-	
+
 	if bool then
 		if modalobject then
 			modalobject:SetModal(false)
@@ -850,9 +858,9 @@ function newobject:SetModal(bool)
 			end
 		end
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -863,7 +871,7 @@ end
 function newobject:GetModal()
 
 	return self.modal
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -875,9 +883,9 @@ function newobject:SetVisible(bool)
 	local children = self.children
 	local internals = self.internals
 	local closebutton = internals[1]
-	
+
 	self.visible = bool
-	
+
 	for k, v in ipairs(children) do
 		v:SetVisible(bool)
 	end
@@ -885,9 +893,9 @@ function newobject:SetVisible(bool)
 	if self.showclose then
 		closebutton.visible = bool
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -899,7 +907,7 @@ function newobject:SetParentLocked(bool)
 
 	self.parentlocked = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -910,7 +918,7 @@ end
 function newobject:GetParentLocked()
 
 	return self.parentlocked
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -918,15 +926,15 @@ end
 	- desc: sets the object's icon
 --]]---------------------------------------------------------
 function newobject:SetIcon(icon)
-	
+
 	if type(icon) == "string" then
 		self.icon = love.graphics.newImage(icon)
 	else
 		self.icon = icon
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -936,19 +944,19 @@ end
 function newobject:GetIcon()
 
 	local icon = self.icon
-	
+
 	if icon then
 		return icon
 	end
-	
+
 	return false
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: SetDockable(dockable)
 	- desc: sets whether or not the object can dock onto
-			another object of its type or be docked 
+			another object of its type or be docked
 			by another object of its type
 --]]---------------------------------------------------------
 function newobject:SetDockable(dockable)
@@ -961,13 +969,13 @@ end
 --[[---------------------------------------------------------
 	- func: GetDockable()
 	- desc: gets whether or not the object can dock onto
-			another object of its type or be docked 
+			another object of its type or be docked
 			by another object of its type
 --]]---------------------------------------------------------
 function newobject:GetDockable()
 
 	return self.dockable
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -978,7 +986,7 @@ function newobject:SetDockZoneSize(size)
 
 	self.dockzonesize = size
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -999,7 +1007,7 @@ function newobject:SetResizable(bool)
 
 	self.canresize = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1009,7 +1017,7 @@ end
 function newobject:GetResizable()
 
 	return self.canresize
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1020,7 +1028,7 @@ function newobject:SetMinWidth(width)
 
 	self.minwidth = width
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1030,7 +1038,7 @@ end
 function newobject:GetMinWidth()
 
 	return self.minwidth
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1041,7 +1049,7 @@ function newobject:SetMaxWidth(width)
 
 	self.maxwidth = width
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1051,7 +1059,7 @@ end
 function newobject:GetMaxWidth()
 
 	return self.maxwidth
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1062,7 +1070,7 @@ function newobject:SetMinHeight(height)
 
 	self.minheight = height
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1072,7 +1080,7 @@ end
 function newobject:GetMinHeight()
 
 	return self.minheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1083,7 +1091,7 @@ function newobject:SetMaxHeight(height)
 
 	self.maxheight = height
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1093,7 +1101,7 @@ end
 function newobject:GetMaxHeight()
 
 	return self.maxheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1115,7 +1123,7 @@ end
 function newobject:GetMinSize()
 
 	return self.minwidth, self.maxwidth
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1137,7 +1145,7 @@ end
 function newobject:GetMaxSize()
 
 	return self.maxwidth, self.maxheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1149,7 +1157,7 @@ function newobject:SetAlwaysOnTop(bool)
 
 	self.alwaysontop = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -1160,5 +1168,5 @@ end
 function newobject:GetAlwaysOnTop()
 
 	return self.alwaysontop
-	
+
 end

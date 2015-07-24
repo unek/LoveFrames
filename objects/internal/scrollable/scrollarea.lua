@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("scrollarea", "loveframes_object_scrollar
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize(parent, bartype)
-	
+
 	self.type = "scroll-area"
 	self.bartype = bartype
 	self.parent = parent
@@ -26,12 +26,12 @@ function newobject:initialize(parent, bartype)
 	self.down = false
 	self.internal = true
 	self.internals = {}
-	
+
 	table.insert(self.internals, loveframes.objects["scrollbar"]:new(self, bartype))
-	
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -39,18 +39,18 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local base = loveframes.base
 	local parent = self.parent
 	local pinternals = parent.internals
@@ -66,7 +66,7 @@ function newobject:update(dt)
 	local bar = internals[1]
 	local hover = self.hover
 	local update = self.Update
-	
+
 	if button then
 		if bartype == "vertical" then
 			self.staticx = 0
@@ -80,13 +80,13 @@ function newobject:update(dt)
 			self.height = parent.height
 		end
 	end
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = parent.x + self.staticx
 		self.y = parent.y + self.staticy
 	end
-	
+
 	if down then
 		if scrolldelay < time then
 			self.scrolldelay = time + delayamount
@@ -108,15 +108,15 @@ function newobject:update(dt)
 			self.down = false
 		end
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -126,11 +126,11 @@ end
 function newobject:draw()
 
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local internals = self.internals
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
@@ -140,20 +140,20 @@ function newobject:draw()
 	local drawfunc = skin.DrawScrollArea or skins[defaultskin].DrawScrollArea
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -161,21 +161,21 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local listo = self.parent.parent
 	local time = love.timer.getTime()
 	local internals = self.internals
 	local bar = internals[1]
 	local hover = self.hover
 	local delayamount = self.delayamount
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		self.down = true
 		self.scrolldelay = time + delayamount + 0.5
 		local baseparent = self:GetBaseParent()
@@ -197,7 +197,7 @@ function newobject:mousepressed(x, y, button)
 		end
 		loveframes.downobject = self
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousepressed(x, y, button)
 	end
@@ -209,19 +209,19 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local internals = self.internals
-	
-	if button == "l" then
+
+	if button == 1 then
 		self.down = false
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousereleased(x, y, button)
 	end
@@ -233,7 +233,7 @@ end
 	- desc: gets the object's bar type
 --]]---------------------------------------------------------
 function newobject:GetBarType()
-	
+
 	return self.bartype
-	
+
 end

@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("tree", "loveframes_object_tree", true)
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
+
 	self.type = "tree"
 	self.width = 200
 	self.height = 200
@@ -33,7 +33,7 @@ function newobject:initialize()
 	self.OnSelectNode = nil
 	self.children = {}
 	self.internals = {}
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -41,38 +41,38 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	self:CheckHover()
-	
+
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	self.itemwidth = 0
 	self.itemheight = 0
-	
+
 	for k, v in ipairs(self.children) do
 		v.x = (v.parent.x + v.staticx) - self.offsetx
 		v.y = (self.y + self.itemheight) - self.offsety
@@ -82,14 +82,14 @@ function newobject:update(dt)
 		self.itemheight = self.itemheight + v.height
 		v:update(dt)
 	end
-	
+
 	if self.vbar then
 		self.itemwidth = self.itemwidth + 16 + 5
 	end
-	
+
 	self.extrawidth = self.itemwidth - self.width
 	self.extraheight = self.itemheight - self.height
-	
+
 	if self.itemheight > self.height then
 		if not self.vbar then
 			local scrollbody = loveframes.objects["scrollbody"]:new(self, "vertical")
@@ -116,7 +116,7 @@ function newobject:update(dt)
 			end
 		end
 	end
-	
+
 	if self.itemwidth > self.width then
 		if not self.hbar then
 			local scrollbody = loveframes.objects["scrollbody"]:new(self, "horizontal")
@@ -142,11 +142,11 @@ function newobject:update(dt)
 			end
 		end
 	end
-	
+
 	for k, v in ipairs(self.internals) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -158,16 +158,16 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
@@ -180,37 +180,34 @@ function newobject:draw()
 	local drawfunc = skin.DrawTree or skins[defaultskin].DrawTree
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	local stencilfunc
-	
-	if self.vbar and not self.hbar then
-		stencilfunc = function() love.graphics.rectangle("fill", self.x, self.y, self.width - 16, self.height) end
-	elseif self.hbar and not self.vbar then
-		stencilfunc = function() love.graphics.rectangle("fill", self.x, self.y, self.width, self.height - 16) end
-	elseif self.vbar and self.hbar then
-		stencilfunc = function() love.graphics.rectangle("fill", self.x, self.y, self.width - 16, self.height - 16) end
-	end
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-	
-	love.graphics.setStencil(stencilfunc)
-	
+
+	if self.vbar and not self.hbar then
+		love.graphics.setScissor(self.x, self.y, self.width - 16, self.height)
+	elseif self.hbar and not self.vbar then
+		love.graphics.setScissor(self.x, self.y, self.width, self.height - 16)
+	elseif self.vbar and self.hbar then
+		love.graphics.setScissor(self.x, self.y, self.width - 16, self.height - 16)
+	end
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	for k, v in ipairs(self.children) do
 		v:draw()
 	end
-	
-	love.graphics.setStencil()
-	
+
+	love.graphics.setScissor()
+
 	for k, v in ipairs(self.internals) do
 		v:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -221,25 +218,25 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	for k, v in ipairs(self.internals) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 	for k, v in ipairs(self.children) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -247,24 +244,24 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	for k, v in ipairs(self.internals) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 	for k, v in ipairs(self.children) do
 		v:mousereleased(x, y, button)
 	end
@@ -285,7 +282,7 @@ function newobject:AddNode(text)
 	node.staticy = self.itemheight
 	table.insert(self.children, node)
 	return node
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -293,14 +290,14 @@ end
 	- desc: removes a node from the object
 --]]---------------------------------------------------------
 function newobject:RemoveNode(id)
-	
+
 	for k, v in ipairs(self.children) do
 		if k == id then
 			v:Remove()
 			break
 		end
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -312,7 +309,7 @@ function newobject:GetVerticalScrollBody()
 	local vbar = self.vbar
 	local internals = self.internals
 	local item = false
-	
+
 	if vbar then
 		for k, v in ipairs(internals) do
 			if v.type == "scrollbody" and v.bartype == "vertical" then
@@ -320,7 +317,7 @@ function newobject:GetVerticalScrollBody()
 			end
 		end
 	end
-	
+
 	return item
 
 end
@@ -334,7 +331,7 @@ function newobject:GetHorizontalScrollBody()
 	local hbar = self.hbar
 	local internals = self.internals
 	local item = false
-	
+
 	if hbar then
 		for k, v in ipairs(internals) do
 			if v.type == "scrollbody" and v.bartype == "horizontal" then
@@ -342,7 +339,7 @@ function newobject:GetHorizontalScrollBody()
 			end
 		end
 	end
-	
+
 	return item
 
 end

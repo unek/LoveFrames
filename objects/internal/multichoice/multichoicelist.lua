@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("multichoicelist", "loveframes_object_mul
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize(object)
-	
+
 	self.type = "multichoicelist"
 	self.parent = loveframes.base
 	self.list = object
@@ -34,23 +34,22 @@ function newobject:initialize(object)
 	self.extrawidth = 0
 	self.extraheight = 0
 	self.canremove = false
-	self.dtscrolling = self.list.dtscrolling
 	self.internal = true
 	self.vbar = false
 	self.children = {}
 	self.internals = {}
-	
+
 	for k, v in ipairs(object.choices) do
 		local row = loveframes.objects["multichoicerow"]:new()
 		row:SetText(v)
 		self:AddItem(row)
 	end
-	
+
 	table.insert(loveframes.base.internals, self)
-	
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -58,23 +57,23 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local width = love.graphics.getWidth()
 	local height = love.graphics.getHeight()
 	local x, y = love.mouse.getPosition()
@@ -84,44 +83,44 @@ function newobject:update(dt)
 	local upadte = self.Update
 	local internals = self.internals
 	local children = self.children
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = parent.x + self.staticx
 		self.y = parent.y + self.staticy
 	end
-		
+
 	if self.x < 0 then
 		self.x = 0
 	end
-	
+
 	if self.x + self.width > width then
 		self.x = width - self.width
 	end
-	
+
 	if self.y < 0 then
 		self.y = 0
 	end
-	
+
 	if self.y + self.height > height then
 		self.y = height - self.height
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:update(dt)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:update(dt)
 		v:SetClickBounds(self.x, self.y, self.width, self.height)
 		v.y = (v.parent.y + v.staticy) - self.offsety
 		v.x = (v.parent.x + v.staticx) - self.offsetx
 	end
-	
+
 	if upadte then
 		upadte(self, dt)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -132,22 +131,21 @@ function newobject:draw()
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local x = self.x
 	local y = self.y
 	local width = self.width
 	local height = self.height
-	local stencilfunc = function() love.graphics.rectangle("fill", x, y, width, height) end
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
@@ -159,35 +157,35 @@ function newobject:draw()
 	local drawcount = loveframes.drawcount
 	local internals = self.internals
 	local children = self.children
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-		
+
 	for k, v in ipairs(internals) do
 		v:draw()
 	end
-		
-	love.graphics.setStencil(stencilfunc)
-		
+
+	love.graphics.setScissor(x, y, width, height)
+
 	for k, v in ipairs(children) do
 		local col = loveframes.util.BoundingBox(self.x, v.x, self.y, v.y, self.width, v.width, self.height, v.height)
 		if col then
 			v:draw()
 		end
 	end
-		
-	love.graphics.setStencil()
-	
+
+	love.graphics.setScissor()
+
 	if not draw then
 		drawoverfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -195,55 +193,51 @@ end
 	- desc: called when the player presses a mouse button
 --]]---------------------------------------------------------
 function newobject:mousepressed(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local selfcol = loveframes.util.BoundingBox(x, self.x, y, self.y, 1, self.width, 1, self.height)
-	local toplist = self:IsTopList()
-	local internals = self.internals
 	local children = self.children
+	local internals = self.internals
 	local scrollamount = self.mousewheelscrollamount
-	
-	if not selfcol and self.canremove and button == "l" then
+
+	if not selfcol and self.canremove and button == 1 then
 		self:Close()
 	end
-	
-	if self.vbar and toplist then
-		local bar = internals[1].internals[1].internals[1]
-		local dtscrolling = self.dtscrolling
-		if dtscrolling then
-			local dt = love.timer.getDelta()
-			if button == "wu" then
-				bar:Scroll(-scrollamount * dt)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount * dt)
-			end
-		else
-			if button == "wu" then
-				bar:Scroll(-scrollamount)
-			elseif button == "wd" then
-				bar:Scroll(scrollamount)
-			end
-		end
-	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousepressed(x, y, button)
+	end
+
+end
+
+--[[---------------------------------------------------------
+	- func: wheelmoved(x, y)
+	- desc: called when the mouse wheel is moved
+--]]---------------------------------------------------------
+function newobject:wheelmoved(x, y)
+
+	local internals = self.internals
+	local toplist = self:IsTopList()
+
+	if self.vbar and toplist then
+		local bar = internals[1].internals[1].internals[1]
+		bar:Scroll(-y)
 	end
 
 end
@@ -253,29 +247,29 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local internals = self.internals
 	local children = self.children
-	
+
 	self.canremove = true
-	
+
 	for k, v in ipairs(internals) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
 	end
@@ -287,17 +281,17 @@ end
 	- desc: adds an item to the object
 --]]---------------------------------------------------------
 function newobject:AddItem(object)
-	
+
 	if object.type ~= "multichoicerow" then
 		return
 	end
-	
+
 	object.parent = self
 	table.insert(self.children, object)
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -307,16 +301,16 @@ end
 function newobject:RemoveItem(object)
 
 	local children = self.children
-	
+
 	for k, v in ipairs(children) do
 		if v == object then
 			table.remove(children, k)
 		end
 	end
-	
+
 	self:CalculateSize()
 	self:RedoLayout()
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -326,7 +320,7 @@ end
 function newobject:CalculateSize()
 
 	self.height = self.padding
-	
+
 	if self.list.listheight then
 		self.height = self.list.listheight
 	else
@@ -338,7 +332,7 @@ function newobject:CalculateSize()
 	if self.height > love.graphics.getHeight() then
 		self.height = love.graphics.getHeight()
 	end
-	
+
 	local numitems = #self.children
 	local height = self.height
 	local padding = self.padding
@@ -346,13 +340,13 @@ function newobject:CalculateSize()
 	local itemheight = self.padding
 	local vbar = self.vbar
 	local children = self.children
-	
+
 	for k, v in ipairs(children) do
 		itemheight = itemheight + v.height + spacing
 	end
-		
+
 	self.itemheight = (itemheight - spacing) + padding
-		
+
 	if self.itemheight > height then
 		self.extraheight = self.itemheight - height
 		if not vbar then
@@ -367,7 +361,7 @@ function newobject:CalculateSize()
 			self.offsety = 0
 		end
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -381,7 +375,7 @@ function newobject:RedoLayout()
 	local spacing = self.spacing
 	local starty = padding
 	local vbar = self.vbar
-	
+
 	if #children > 0 then
 		for k, v in ipairs(children) do
 			v.staticx = padding
@@ -397,7 +391,7 @@ function newobject:RedoLayout()
 			starty = starty + spacing
 		end
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -407,7 +401,7 @@ end
 function newobject:SetPadding(amount)
 
 	self.padding = amount
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -417,7 +411,7 @@ end
 function newobject:SetSpacing(amount)
 
 	self.spacing = amount
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -428,5 +422,5 @@ function newobject:Close()
 
 	self:Remove()
 	self.list.haslist = false
-	
+
 end

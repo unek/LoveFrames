@@ -34,6 +34,8 @@ Version 0.10 - Alpha (Release Date TBD)
 [ADDED] a new textinput method: SetTrackingEnabled(bool)
 [ADDED] a new textinput method: GetTrackingEnabled()
 [ADDED] a new list method: GetAutoScroll()
+[ADDED] love 0.10 support
+[ADDED] new skin directives
 
 [FIXED] bug that would cause tabbuttons to be positioned incorrectly when scrolling with the mouse wheel
 [FIXED] collision detection issue caused by list child objects not being updated when outside of their parent's bounding box
@@ -48,6 +50,8 @@ Version 0.10 - Alpha (Release Date TBD)
 [FIXED] scrollbody now resizes to parent
 [FIXED] textinput indicator now always visible
 [FIXED] columnlist rows can have non-drawable extra info ("Blue" skin doesn't crash on it)
+[FIXED] flickering menu
+[FIXED] tablist scrolling problems
 
 [CHANGED] columnlist row colors are now adjusted when a row is removed from the list
 [CHANGED] columnlistarea.rowcolorindex now resets to 1 when the list is cleared
@@ -59,6 +63,10 @@ Version 0.10 - Alpha (Release Date TBD)
 [CHANGED] textinput tries to scroll horizontally only if alt is pressed
 [CHANGED] project-wide utf8 support
 [CHANGED] the textinput's indicator is now always visible when being moved
+[CHANGED] tooltip behaviour
+[CHANGED] tooltips and submenus now pop-up with a delay
+
+[REMOVED] dt scrolling and its methods: GetDTScrolling() and SetDTScrolling()
 
 ================================================
 Version 0.9.8.1 - Alpha (May 17 - 2014)
@@ -68,7 +76,7 @@ Version 0.9.8.1 - Alpha (May 17 - 2014)
 [FIXED] frame:MakeTop not returning self in certain situations
 [FIXED] ability to insert tabs into a textinput when all of the object's text was selected
 [FIXED] ability to cause a single-line textinput to enter all text selected mode when no text had been entered
- 
+
 [CHANGED] returning false in a frame.OnClose event callback will prevent the frame from being removed
 [CHANGED] tabs:AddTab now returns the tabbutton object associated with the new tab
 
@@ -718,7 +726,7 @@ Version 0.9.3.2 - Alpha (Spetember 29 - 2012)
 [FIXED] the tooltip object not disappearing if it was visible when it's object's visibility was changed to false
 [FIXED] the text input object's x offset not being adjusted initially when the width of it's text would would become wider than it's drawing area
 
-[CHANGED] massive code cleanup for optimization and 
+[CHANGED] massive code cleanup for optimization and
 [CHANGED] frames can now be parent to other objects
 [CHANGED] textinput:RunBlink() to textinput:UpdateIndicator()
 [CHANGED] textinput:GetBlinkerVisisbility() to textinput:GetIndicatorVisisbility()
@@ -775,7 +783,7 @@ Version 0.9.3 - Alpha (Spetember 1 - 2012)
 [FIXED] the collapsible category's object not scrolling properly when in a list
 [FIXED] skins not assuming the drawing functions of the default skins if drawing functions in the active skin were missing
 [FIXED] some objects not being removed
-[FIXED] sliders not scrolling properly when in a list 
+[FIXED] sliders not scrolling properly when in a list
 
 [CHANGED] various code for a small cleanup
 [CHANGED] tooltips from being children of the base object to internals of the base object

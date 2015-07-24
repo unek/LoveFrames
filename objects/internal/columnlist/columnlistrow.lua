@@ -28,14 +28,21 @@ function newobject:initialize(parent, data)
 	self.selected = false
 	self.internal = true
 	self.columndata = {}
-	
+
 	for k, v in ipairs(data) do
 		self.columndata[k] = tostring(v)
 	end
-	
+
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.font = directives.columnlist_font or self.font
+		self.height = directives.columnlistrow_height or self.height
+	end
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -43,24 +50,24 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	if not self.visible then
 		if not self.alwaysupdate then
 			return
 		end
 	end
-	
+
 	local parent = self.parent
 	local update = self.Update
-	
+
 	self:CheckHover()
-	
+
 	-- move to parent if there is a parent
 	if parent ~= loveframes.base then
 		self.x = parent.x + self.staticx
 		self.y = parent.y + self.staticy
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -76,7 +83,7 @@ function newobject:draw()
 	if not self.visible then
 		return
 	end
-	
+
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
@@ -85,16 +92,16 @@ function newobject:draw()
 	local drawfunc = skin.DrawColumnListRow or skins[defaultskin].DrawColumnListRow
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -106,8 +113,8 @@ function newobject:mousepressed(x, y, button)
 	if not self.visible then
 		return
 	end
-	
-	if self.hover and button == "l" then
+
+	if self.hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -126,22 +133,22 @@ function newobject:mousereleased(x, y, button)
 	if not self.visible then
 		return
 	end
-	
+
 	if self.hover then
 		local parent = self:GetParent():GetParent()
-		if button == "l" then
+		if button == 1 then
 			local onrowclicked = parent.OnRowClicked
 			if onrowclicked then
 				onrowclicked(parent, self, self.columndata)
 			end
-		elseif button == "r" then
+		elseif button == 2 then
 			local onrowrightclicked = parent.OnRowRightClicked
 			if onrowrightclicked then
 				onrowrightclicked(parent, self, self.columndata)
 			end
 		end
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -212,7 +219,7 @@ end
 function newobject:SetColumnData(data)
 
 	self.columndata = data
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -222,7 +229,7 @@ end
 function newobject:GetColumnData()
 
 	return self.columndata
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -242,5 +249,5 @@ end
 function newobject:GetSelected()
 
 	return self.selected
-	
+
 end

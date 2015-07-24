@@ -15,7 +15,7 @@ local newobject = loveframes.NewObject("form", "loveframes_object_form", true)
 	- desc: initializes the object
 --]]---------------------------------------------------------
 function newobject:initialize()
-	
+
 	self.type = "form"
 	self.name = "Form"
 	self.layout = "vertical"
@@ -26,7 +26,7 @@ function newobject:initialize()
 	self.topmargin = 12
 	self.internal = false
 	self.children = {}
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -34,40 +34,40 @@ end
 	- desc: updates the element
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local children = self.children
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base and parent.type ~= "list" then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	self:CheckHover()
 
 	for k, v in ipairs(children) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -79,20 +79,20 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local children = self.children
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
@@ -102,21 +102,21 @@ function newobject:draw()
 	local drawfunc = skin.DrawForm or skins[defaultskin].DrawForm
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-		
+
 	-- loop through the object's children and draw them
 	for k, v in ipairs(children) do
 		v:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -127,31 +127,31 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local children = self.children
 	local hover = self.hover
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
 		end
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -162,22 +162,22 @@ function newobject:mousereleased(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible  = self.visible
 	local children = self.children
-	
+
 	if not visible then
 		return
 	end
-	
+
 	for k, v in ipairs(children) do
 		v:mousereleased(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -193,16 +193,16 @@ function newobject:AddItem(object)
 
 	local children = self.children
 	local state = self.state
-	
+
 	object:Remove()
 	object.parent = self
 	object:SetState(state)
-	
+
 	table.insert(children, object)
 	self:LayoutObjects()
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -212,7 +212,7 @@ end
 function newobject:RemoveItem(data)
 
 	local dtype = type(data)
-	
+
 	if dtype == "number" then
 		local children = self.children
 		local item = children[data]
@@ -222,10 +222,10 @@ function newobject:RemoveItem(data)
 	else
 		data:Remove()
 	end
-	
+
 	self:LayoutObjects()
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -244,7 +244,7 @@ function newobject:LayoutObjects()
 	local height = padding * 2 + topmargin
 	local x = padding
 	local y = padding + topmargin
-	
+
 	if layout == "vertical" then
 		local largest_width = 0
 		for k, v in ipairs(children) do
@@ -274,9 +274,9 @@ function newobject:LayoutObjects()
 		self.width = width
 		self.height = height + largest_height
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -287,7 +287,7 @@ function newobject:SetLayoutType(ltype)
 
 	self.layout = ltype
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -297,7 +297,7 @@ end
 function newobject:GetLayoutType()
 
 	return self.layout
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -331,7 +331,7 @@ function newobject:SetName(name)
 
 	self.name = name
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -341,5 +341,5 @@ end
 function newobject:GetName()
 
 	return self.name
-	
+
 end

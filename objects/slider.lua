@@ -33,15 +33,15 @@ function newobject:initialize()
 	self.internals = {}
 	self.OnValueChanged	= nil
 	self.OnRelease = nil
-	
+
 	-- create the slider button
 	local sliderbutton = loveframes.objects["sliderbutton"]:new(self)
 	sliderbutton.state = self.state
 	table.insert(self.internals, sliderbutton)
-	
+
 	-- set initial value to minimum
 	self:SetValue(self.min)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -52,34 +52,34 @@ function newobject:update(dt)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local internals = self.internals
 	local sliderbutton 	= internals[1]
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	self:CheckHover()
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base and parent.type ~= "list" then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	if sliderbutton then
 		local slidetype = self.slidetype
 		local buttonwidth = sliderbutton.width
@@ -90,16 +90,16 @@ function newobject:update(dt)
 			self.width = buttonwidth
 		end
 	end
-	
+
 	-- update internals
 	for k, v in ipairs(self.internals) do
 		v:update(dt)
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -110,17 +110,17 @@ function newobject:draw()
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local internals = self.internals
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
@@ -130,16 +130,16 @@ function newobject:draw()
 	local drawfunc = skin.DrawSlider or skins[defaultskin].DrawSlider
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	-- draw internals
 	for k, v in ipairs(internals) do
 		v:draw()
@@ -155,29 +155,29 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-		
+
 	local enabled = self.enabled
-	
+
 	if not enabled then
 		return
 	end
-	
+
 	local internals = self.internals
 	local hover = self.hover
 	local slidetype = self.slidetype
 	local scrollable = self.scrollable
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		if slidetype == "horizontal" then
 			local xpos = x - self.x
 			local button = internals[1]
@@ -214,11 +214,11 @@ function newobject:mousepressed(x, y, button)
 		local newvalue = value - decrease
 		self:SetValue(newvalue)
 	end
-	
+
 	for k, v in ipairs(internals) do
 		v:mousepressed(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -230,19 +230,19 @@ function newobject:SetValue(value)
 	if value > self.max then
 		return
 	end
-	
+
 	if value < self.min then
 		return
 	end
-	
+
 	local decimals = self.decimals
 	local newval = loveframes.util.Round(value, decimals)
 	local internals = self.internals
 	local onvaluechanged = self.OnValueChanged
-	
+
 	-- set the new value
 	self.value = newval
-	
+
 	-- slider button object
 	local sliderbutton = internals[1]
 	local slidetype = self.slidetype
@@ -250,7 +250,7 @@ function newobject:SetValue(value)
 	local height = self.height
 	local min = self.min
 	local max = self.max
-	
+
 	-- move the slider button to the new position
 	if slidetype == "horizontal" then
 		local xpos = width * ((newval - min) / (max - min))
@@ -259,14 +259,14 @@ function newobject:SetValue(value)
 		local ypos = height - height * ((newval - min) / (max - min))
 		sliderbutton:MoveToY(ypos)
 	end
-	
+
 	-- call OnValueChanged
 	if onvaluechanged then
 		onvaluechanged(self, newval)
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -276,7 +276,7 @@ end
 function newobject:GetValue()
 
 	return self.value
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -286,13 +286,13 @@ end
 function newobject:SetMax(max)
 
 	self.max = max
-	
+
 	if self.value > self.max then
 		self.value = self.max
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -302,7 +302,7 @@ end
 function newobject:GetMax()
 
 	return self.max
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -312,13 +312,13 @@ end
 function newobject:SetMin(min)
 
 	self.min = min
-	
+
 	if self.value < self.min then
 		self.value = self.min
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -328,7 +328,7 @@ end
 function newobject:GetMin()
 
 	return self.min
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -339,17 +339,17 @@ function newobject:SetMinMax(min, max)
 
 	self.min = min
 	self.max = max
-	
+
 	if self.value > self.max then
 		self.value = self.max
 	end
-	
+
 	if self.value < self.min then
 		self.value = self.min
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -359,7 +359,7 @@ end
 function newobject:GetMinMax()
 
 	return self.min, self.max
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -370,7 +370,7 @@ function newobject:SetText(text)
 
 	self.text = text
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -380,30 +380,30 @@ end
 function newobject:GetText()
 
 	return self.text
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: SetDecimals(decimals)
-	- desc: sets how many decimals the object's value 
+	- desc: sets how many decimals the object's value
 			can have
 --]]---------------------------------------------------------
 function newobject:SetDecimals(decimals)
 
 	self.decimals = decimals
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
 	- func: GetDecimals()
-	- desc: gets how many decimals the object's value 
+	- desc: gets how many decimals the object's value
 			can have
 --]]---------------------------------------------------------
 function newobject:GetDecimals()
 
 	return self.decimals
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -411,17 +411,17 @@ end
 	- desc: sets the objects's button size
 --]]---------------------------------------------------------
 function newobject:SetButtonSize(width, height)
-	
+
 	local internals = self.internals
 	local sliderbutton = internals[1]
-	
+
 	if sliderbutton then
 		sliderbutton.width = width
 		sliderbutton.height = height
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -432,11 +432,11 @@ function newobject:GetButtonSize()
 
 	local internals = self.internals
 	local sliderbutton = internals[1]
-	
+
 	if sliderbutton then
 		return sliderbutton.width, sliderbutton.height
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -446,13 +446,13 @@ end
 function newobject:SetSlideType(slidetype)
 
 	self.slidetype = slidetype
-	
+
 	if slidetype == "vertical" then
 		self:SetValue(self.min)
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -462,7 +462,7 @@ end
 function newobject:GetSlideType()
 
 	return self.slidetype
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -474,7 +474,7 @@ function newobject:SetScrollable(bool)
 
 	self.scrollable = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -485,7 +485,7 @@ end
 function newobject:GetScrollable()
 
 	return self.scrollable
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -497,7 +497,7 @@ function newobject:SetScrollIncrease(increase)
 
 	self.scrollincrease = increase
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -508,7 +508,7 @@ end
 function newobject:GetScrollIncrease()
 
 	return self.scrollincrease
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -520,7 +520,7 @@ function newobject:SetScrollDecrease(decrease)
 
 	self.scrolldecrease = decrease
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -531,7 +531,7 @@ end
 function newobject:GetScrollDecrease()
 
 	return self.scrolldecrease
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -542,7 +542,7 @@ function newobject:SetEnabled(bool)
 
 	self.enabled = bool
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -552,5 +552,5 @@ end
 function newobject:GetEnabled()
 
 	return self.enabled
-	
+
 end

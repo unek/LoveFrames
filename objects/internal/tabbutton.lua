@@ -31,29 +31,29 @@ function newobject:initialize(parent, text, tabnumber, tip, image, onopened, onc
 	self.image = nil
 	self.OnOpened = nil
 	self.OnClosed = nil
-	
+
 	if tip then
 		self.tooltip = loveframes.objects["tooltip"]:new(self, tip)
 		self.tooltip:SetFollowCursor(false)
 		self.tooltip:SetFollowObject(true)
 		self.tooltip:SetOffsets(0, -(self.tooltip.internals[1]:GetHeight() + 12))
 	end
-	
+
 	if image then
 		self:SetImage(image)
 	end
-	
+
 	if onopened then
 		self.OnOpened = onopened
 	end
-	
+
 	if onclosed then
 		self.OnClosed = onclosed
 	end
-	
+
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -61,23 +61,23 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	self:CheckHover()
 	self:SetClickBounds(parent.x, parent.y, parent.width, parent.height)
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -89,11 +89,11 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	if not self.visible then
 		return
 	end
-	
+
 	local image = self.image
 	local skins = loveframes.skins.available
 	local skinindex = loveframes.config["ACTIVESKIN"]
@@ -104,16 +104,16 @@ function newobject:draw()
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
 	local internals = self.internals
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-	
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -123,15 +123,15 @@ end
 function newobject:mousepressed(x, y, button)
 
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local internals = self.internals
-	
-	if hover and button == "l" then
+
+	if hover and button == 1 then
 		local baseparent = self:GetBaseParent()
 		if baseparent and baseparent.type == "frame" then
 			baseparent:MakeTop()
@@ -139,7 +139,7 @@ function newobject:mousepressed(x, y, button)
 		self.down = true
 		loveframes.downobject = self
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -147,19 +147,19 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local parent = self.parent
 	local tabnumber = self.tabnumber
-	
-	if hover and button == "l" then
-		if button == "l" then
+
+	if hover and button == 1 then
+		if button == 1 then
 			local tab = parent.tab
 			local internals = parent.internals
 			local onopened = self.OnOpened
@@ -174,7 +174,7 @@ function newobject:mousereleased(x, y, button)
 			end
 		end
 	end
-	
+
 	self.down = false
 
 end
@@ -186,7 +186,7 @@ end
 function newobject:SetText(text)
 
 	self.text = text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -196,7 +196,7 @@ end
 function newobject:GetText()
 
 	return self.text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -210,7 +210,7 @@ function newobject:SetImage(image)
 	else
 		self.image = image
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -220,7 +220,7 @@ end
 function newobject:GetImage()
 
 	return self.image
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -230,5 +230,5 @@ end
 function newobject:GetTabNumber()
 
 	return self.tabnumber
-	
+
 end

@@ -27,7 +27,7 @@ function newobject:initialize()
 	self.down = false
 	self.children = {}
 	self.OnOpenedClosed = nil
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -35,38 +35,38 @@ end
 	- desc: updates the object
 --]]---------------------------------------------------------
 function newobject:update(dt)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
 	local alwaysupdate = self.alwaysupdate
-	
+
 	if not visible then
 		if not alwaysupdate then
 			return
 		end
 	end
-	
+
 	local open = self.open
 	local children = self.children
 	local curobject = children[1]
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
+
 	self:CheckHover()
-	
+
 	-- move to parent if there is a parent
 	if parent ~= base and parent.type ~= "list" then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
-	
+
 	if open and curobject then
 		curobject:SetWidth(self.width - self.padding * 2)
 		curobject:update(dt)
@@ -75,7 +75,7 @@ function newobject:update(dt)
 			curobject:SetVisible(false)
 		end
 	end
-	
+
 	if update then
 		update(self, dt)
 	end
@@ -87,20 +87,20 @@ end
 	- desc: draws the object
 --]]---------------------------------------------------------
 function newobject:draw()
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local open = self.open
 	local children = self.children
 	local curobject = children[1]
@@ -112,20 +112,20 @@ function newobject:draw()
 	local drawfunc = skin.DrawCollapsibleCategory or skins[defaultskin].DrawCollapsibleCategory
 	local draw = self.Draw
 	local drawcount = loveframes.drawcount
-	
+
 	-- set the object's draw order
 	self:SetDrawOrder()
-		
+
 	if draw then
 		draw(self)
 	else
 		drawfunc(self)
 	end
-	
+
 	if open and curobject then
 		curobject:draw()
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -136,25 +136,25 @@ function newobject:mousepressed(x, y, button)
 
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local open = self.open
 	local children = self.children
 	local curobject = children[1]
-	
+
 	if hover then
 		local col = loveframes.util.BoundingBox(self.x, x, self.y, y, self.width, 1, self.closedheight, 1)
-		if button == "l" and col then
+		if button == 1 and col then
 			local baseparent = self:GetBaseParent()
 			if baseparent and baseparent.type == "frame" then
 				baseparent:MakeTop()
@@ -163,11 +163,11 @@ function newobject:mousepressed(x, y, button)
 			loveframes.downobject = self
 		end
 	end
-	
+
 	if open and curobject then
 		curobject:mousepressed(x, y, button)
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -175,20 +175,20 @@ end
 	- desc: called when the player releases a mouse button
 --]]---------------------------------------------------------
 function newobject:mousereleased(x, y, button)
-	
+
 	local state = loveframes.state
 	local selfstate = self.state
-	
+
 	if state ~= selfstate then
 		return
 	end
-	
+
 	local visible = self.visible
-	
+
 	if not visible then
 		return
 	end
-	
+
 	local hover = self.hover
 	local down = self.down
 	local clickable = self.clickable
@@ -197,8 +197,8 @@ function newobject:mousereleased(x, y, button)
 	local col = loveframes.util.BoundingBox(self.x, x, self.y, y, self.width, 1, self.closedheight, 1)
 	local children = self.children
 	local curobject = children[1]
-	
-	if hover and col and down and button == "l" then
+
+	if hover and col and down and button == 1 then
 		if open then
 			self:SetOpen(false)
 		else
@@ -206,7 +206,7 @@ function newobject:mousereleased(x, y, button)
 		end
 		self.down = false
 	end
-	
+
 	if open and curobject then
 		curobject:mousereleased(x, y, button)
 	end
@@ -221,7 +221,7 @@ function newobject:SetText(text)
 
 	self.text = text
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -231,7 +231,7 @@ end
 function newobject:GetText()
 
 	return self.text
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -239,24 +239,24 @@ end
 	- desc: sets the category's object
 --]]---------------------------------------------------------
 function newobject:SetObject(object)
-	
+
 	local children = self.children
 	local curobject = children[1]
-	
+
 	if curobject then
 		curobject:Remove()
 		self.children = {}
 	end
-	
+
 	object:Remove()
 	object.parent = self
 	object:SetState(self.state)
 	object:SetWidth(self.width - self.padding*2)
 	object:SetPos(self.padding, self.closedheight + self.padding)
 	table.insert(self.children, object)
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -267,13 +267,13 @@ function newobject:GetObject()
 
 	local children = self.children
 	local curobject = children[1]
-	
+
 	if curobject then
 		return curobject
 	else
 		return false
 	end
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -287,9 +287,9 @@ function newobject:SetSize(width, height, relative)
 	else
 		self.width = width
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -299,7 +299,7 @@ end
 function newobject:SetHeight(height)
 
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -310,7 +310,7 @@ function newobject:SetClosedHeight(height)
 
 	self.closedheight = height
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -320,7 +320,7 @@ end
 function newobject:GetClosedHeight()
 
 	return self.closedheight
-	
+
 end
 
 --[[---------------------------------------------------------
@@ -334,9 +334,9 @@ function newobject:SetOpen(bool)
 	local closedheight = self.closedheight
 	local padding = self.padding
 	local onopenedclosed = self.OnOpenedClosed
-	
+
 	self.open = bool
-	
+
 	if not bool then
 		self.height = closedheight
 		if curobject then
@@ -350,14 +350,14 @@ function newobject:SetOpen(bool)
 			curobject:SetVisible(true)
 		end
 	end
-	
+
 	-- call the on opened closed callback if it exists
 	if onopenedclosed then
 		onopenedclosed(self)
 	end
-	
+
 	return self
-	
+
 end
 
 --[[---------------------------------------------------------
