@@ -72,7 +72,14 @@ function newobject:update(dt)
 		if col then
 			v:update(dt)
 		end
-		v:SetClickBounds(self.x, self.y, self.width, self.height)
+
+		local width = self.width
+		local height = self.height
+		if self.vbar then
+			width = width - self:GetVerticalScrollBody().width
+		end
+		v:SetClickBounds(self.x, self.y, width, height)
+
 		v.y = (v.parent.y + v.staticy) - self.offsety + cheight
 		v.x = (v.parent.x + v.staticx) - self.offsetx
 	end
