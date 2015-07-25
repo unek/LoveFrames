@@ -31,6 +31,13 @@ function newobject:initialize()
 	self.OnChanged = function () end
 	self.group = {}
 
+	local skin = loveframes.util.GetActiveSkin() or loveframes.config["DEFAULTSKIN"]
+	local directives = skin.directives
+	if directives then
+		self.boxwidth = directives.radiobutton_width or self.boxwidth
+		self.boxheight = directives.radiobutton_height or self.boxheight
+	end
+
 end
 
 --[[---------------------------------------------------------

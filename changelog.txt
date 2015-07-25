@@ -36,6 +36,7 @@ Version 0.10 - Alpha (Release Date TBD)
 [ADDED] a new list method: GetAutoScroll()
 [ADDED] love 0.10 support
 [ADDED] new skin directives
+[ADDED] home and end key support in textinputs
 
 [FIXED] bug that would cause tabbuttons to be positioned incorrectly when scrolling with the mouse wheel
 [FIXED] collision detection issue caused by list child objects not being updated when outside of their parent's bounding box
