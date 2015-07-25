@@ -66,6 +66,7 @@ Version 0.10 - Alpha (Release Date TBD)
 [CHANGED] the textinput's indicator is now always visible when being moved
 [CHANGED] tooltip behaviour
 [CHANGED] tooltips and submenus now pop-up with a delay
+[CHANGED] scrollbar behavior is now more windows-y
 
 [REMOVED] dt scrolling and its methods: GetDTScrolling() and SetDTScrolling()
 

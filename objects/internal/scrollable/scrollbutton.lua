@@ -22,7 +22,8 @@ function newobject:initialize(scrolltype)
 	self.height = 16
 	self.down = false
 	self.internal = true
-	self.OnClick = function() end
+	self.OnClick = nil
+	self.OnPress = nil
 
 	-- apply template properties to the object
 	loveframes.templates.ApplyToObject(self)
@@ -130,6 +131,14 @@ function newobject:mousepressed(x, y, button)
 		loveframes.downobject = self
 	end
 
+	local hover = self.hover
+	local down = self.down
+	local onpress = self.OnPress
+
+	if hover and down and button == 1 and onpress then
+		onpress(self, x, y)
+	end
+
 end
 
 --[[---------------------------------------------------------
@@ -148,10 +157,8 @@ function newobject:mousereleased(x, y, button)
 	local down = self.down
 	local onclick = self.OnClick
 
-	if hover and down then
-		if button == 1 then
-			onclick(x, y, self)
-		end
+	if hover and down and button == 1 and onclick then
+		onclick(self, x, y)
 	end
 
 	self.down = false
