@@ -54,6 +54,8 @@ Version 0.10 - Alpha (Release Date TBD)
 [FIXED] flickering menu
 [FIXED] tablist scrolling problems
 [FIXED] invalid columnlist click bounds
+[FIXED] utf-8 support is now always on and isn't global
+[FIXED] textinput indicator not visible when adding new lines in multiline inputs
 
 [CHANGED] columnlist row colors are now adjusted when a row is removed from the list
 [CHANGED] columnlistarea.rowcolorindex now resets to 1 when the list is cleared
