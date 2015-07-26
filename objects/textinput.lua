@@ -144,7 +144,6 @@ function newobject:update(dt)
 	if inputobject ~= self then
 		self.focus = false
 		self.alltextselected = false
-		love.keyboard.setTextInput(false)
 	end
 
 	self:PositionText()
@@ -383,7 +382,6 @@ function newobject:mousepressed(x, y, button)
 				self.alltextselected = false
 			end
 			self.focus = true
-			love.keyboard.setTextInput(true)
 			self.lastclicktime = time
 			self:GetTextCollisions(x, y)
 			if onfocusgained and not focus then

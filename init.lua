@@ -169,6 +169,8 @@ function loveframes.update(dt)
 		end
 	end
 
+	love.keyboard.setTextInput(loveframes.inputobject)
+
 	loveframes.collisions = {}
 	base:update(dt)
 
