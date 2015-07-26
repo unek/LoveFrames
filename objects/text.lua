@@ -12,6 +12,9 @@
 local path = string.sub(..., 1, string.len(...) - string.len(".objects.text"))
 local loveframes = require(path .. ".libraries.common")
 
+-- use the utf8 library
+local utf8 = require(path .. ".libraries.utf8")
+
 -- text object
 local newobject = loveframes.NewObject("text", "loveframes_object_text", true)
 
@@ -293,10 +296,10 @@ function newobject:SetText(t)
 			})
 		elseif dtype == "string" then
 			if self.ignorenewlines then
-				v = v:gsub("\n", " ")
+				v = utf8.gsub(v, "\n", " ")
 			end
-			v = v:gsub(string.char(9), "    ")
-			v = v:gsub("\n", " \n ")
+			v = utf8.gsub(v, string.char(9), "    ")
+			v = utf8.gsub(v, "\n", " \n ")
 			local parts = loveframes.util.SplitString(v, " ")
 			for i, j in ipairs(parts) do
 				table.insert(self.formattedtext, {
@@ -320,10 +323,10 @@ function newobject:SetText(t)
 			local key = k
 			if width > maxw then
 				table.remove(self.formattedtext, k)
-				for n=1, string.len(data) do
-					local item = data:sub(n, n)
+				for n=1, utf8.len(data) do
+					local item = utf8.sub(data, n, n)
 					local itemw = v.font:getWidth(item)
-					if n ~= string.len(data) then
+					if n ~= utf8.len(data) then
 						if (curw + itemw) > maxw then
 							table.insert(inserts, {
 								key = key,
@@ -393,7 +396,7 @@ function newobject:SetText(t)
 		local text = v.text
 		local color = v.color
 		if detectlinks then
-			if string.len(text) > 7 and (text:sub(1, 7) == "http://" or text:sub(1, 8) == "https://") then
+			if utf8.len(text) > 7 and (utf8.sub(text, 1, 7) == "http://" or utf8.sub(text, 1, 8) == "https://") then
 				v.link = true
 			end
 		end
@@ -408,7 +411,7 @@ function newobject:SetText(t)
 			totalwidth = totalwidth + width
 			if maxw > 0 then
 				if k ~= 1 then
-					if string.byte(text) == 10 then
+					if utf8.byte(text) == 10 then
 						twidth = 0
 						drawx = 0
 						width = 0
@@ -434,7 +437,7 @@ function newobject:SetText(t)
 				v.x = drawx
 				v.y = drawy
 			else
-				if string.byte(text) == 10 then
+				if utf8.byte(text) == 10 then
 					twidth = 0
 					drawx = 0
 					width = 0

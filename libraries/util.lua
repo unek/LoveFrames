@@ -7,6 +7,9 @@
 local path = string.sub(..., 1, string.len(...) - string.len(".util"))
 local loveframes = require(path .. ".common")
 
+-- use the utf8 library
+local utf8 = require(path .. ".libraries.utf8")
+
 -- util library
 loveframes.util = {}
 
@@ -204,7 +207,7 @@ function loveframes.util.SplitString(str, pat)
 	if pat == " " then
 		local fpat = "(.-)" .. pat
 		local last_end = 1
-		local s, e, cap = str:find(fpat, 1)
+		local s, e, cap = utf8.find(str, fpat, 1)
 		while s do
 			if s ~= #str then
 				cap = cap .. " "
@@ -213,25 +216,25 @@ function loveframes.util.SplitString(str, pat)
 				table.insert(t,cap)
 			end
 			last_end = e+1
-			s, e, cap = str:find(fpat, last_end)
+			s, e, cap = utf8.find(str, fpat, last_end)
 		end
 		if last_end <= #str then
-			cap = str:sub(last_end)
+			cap = utf8.sub(str, last_end)
 			table.insert(t, cap)
 		end
 	else
 		local fpat = "(.-)" .. pat
 		local last_end = 1
-		local s, e, cap = str:find(fpat, 1)
+		local s, e, cap = utf8.find(str, fpat, 1)
 		while s do
 			if s ~= 1 or cap ~= "" then
 				table.insert(t,cap)
 			end
 			last_end = e+1
-			s, e, cap = str:find(fpat, last_end)
+			s, e, cap = utf8.find(str, fpat, last_end)
 		end
 		if last_end <= #str then
-			cap = str:sub(last_end)
+			cap = utf8.sub(str, last_end)
 			table.insert(t, cap)
 		end
 	end

@@ -7,7 +7,7 @@
 local path = string.sub(..., 1, string.len(...) - string.len(".objects.textinput"))
 local loveframes = require(path .. ".libraries.common")
 
--- require the utf8 library
+-- use the utf8 library
 local utf8 = require(path .. ".libraries.utf8")
 
 -- textinput object
