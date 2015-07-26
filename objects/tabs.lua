@@ -268,21 +268,21 @@ function newobject:wheelmoved(x, y)
 	local numinternals = #internals
 	local buttonheight = self:GetHeightOfButtons()
 	local mx, my = love.mouse.getPosition()
-  local col = loveframes.util.BoundingBox(self.x, mx, self.y, my, self.width, 1, buttonheight, 1)
-  local visible
+	local col = loveframes.util.BoundingBox(self.x, mx, self.y, my, self.width, 1, buttonheight, 1)
+	local visible
 
-  if y < 0 then
-  	visible = internals[numinternals - 1]:GetVisible()
-  elseif y > 0 then
-  	visible = internals[numinternals]:GetVisible()
-  end
+	if y < 0 then
+		visible = internals[numinternals - 1]:GetVisible()
+	elseif y > 0 then
+		visible = internals[numinternals]:GetVisible()
+	end
 
-  if col and visible then
-  	local scrollamount = self.mousewheelscrollamount
-    local bwidth = self:GetWidthOfButtons()
+	if col and visible then
+		local scrollamount = self.mousewheelscrollamount
+		local bwidth = self:GetWidthOfButtons()
 
-  	self.offsetx = math.min(0, math.max(self.width - bwidth, self.offsetx + scrollamount * -y))
-  end
+		self.offsetx = math.min(0, math.max(self.width - bwidth, self.offsetx + scrollamount * -y))
+	end
 end
 
 --[[---------------------------------------------------------

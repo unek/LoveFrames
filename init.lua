@@ -36,7 +36,6 @@ loveframes.downobject = false
 loveframes.resizeobject = false
 loveframes.dragobject = false
 loveframes.hover = false
-loveframes.input_cursor_set = false
 loveframes.prevcursor = nil
 loveframes.basicfont = love.graphics.newFont(12)
 loveframes.basicfontsmall = love.graphics.newFont(10)
@@ -63,7 +62,6 @@ love.keyboard.setKeyRepeat(true)
 function loveframes.update(dt)
 
 	local base = loveframes.base
-	local input_cursor_set = loveframes.input_cursor_set
 
 	loveframes.collisioncount = 0
 	loveframes.objectcount = 0
