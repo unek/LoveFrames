@@ -180,6 +180,8 @@ end
 --]]---------------------------------------------------------
 function loveframes.draw()
 
+	love.graphics.push("all")
+
 	local base = loveframes.base
 	local r, g, b, a = love.graphics.getColor()
 	local font = love.graphics.getFont()
@@ -194,6 +196,8 @@ function loveframes.draw()
 	if font then
 		love.graphics.setFont(font)
 	end
+
+	love.graphics.pop("all")
 
 end
 
