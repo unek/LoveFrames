@@ -8,7 +8,7 @@ local path = string.sub(..., 1, string.len(...) - string.len(".util"))
 local loveframes = require(path .. ".common")
 
 -- use the utf8 library
-local utf8 = require(path .. ".libraries.utf8")
+local utf8 = require(path .. ".utf8")
 
 -- util library
 loveframes.util = {}
@@ -337,18 +337,20 @@ end
 	- note: I take not credit for this function
 --]]---------------------------------------------------------
 function loveframes.util.DeepCopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[loveframes.util.DeepCopy(orig_key)] = loveframes.util.DeepCopy(orig_value)
-        end
-        setmetatable(copy, loveframes.util.DeepCopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
+
+	local orig_type = type(orig)
+	local copy
+	if orig_type == 'table' then
+		copy = {}
+		for orig_key, orig_value in next, orig, nil do
+			copy[loveframes.util.DeepCopy(orig_key)] = loveframes.util.DeepCopy(orig_value)
+		end
+		setmetatable(copy, loveframes.util.DeepCopy(getmetatable(orig)))
+	else -- number, string, boolean, etc
+		copy = orig
+	end
+	return copy
+
 end
 
 --[[---------------------------------------------------------
