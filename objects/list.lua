@@ -161,7 +161,7 @@ function newobject:draw()
 		drawfunc(self)
 	end
 
-	love.graphics.setScissor(x, y, width, heightc)
+	love.graphics.setScissor(x, y, width, height)
 
 	for k, v in ipairs(children) do
 		local col = loveframes.util.BoundingBox(x, v.x, y, v.y, width, v.width, height, v.height)
@@ -232,17 +232,7 @@ end
 --]]---------------------------------------------------------
 function newobject:wheelmoved(x, y)
 
-	local bar = false
-	if self.vbar and self.hbar then
-		local hbar = self:GetHorizontalScrollBody():GetScrollBar()
-		local vbar = self:GetVerticalScrollBody():GetScrollBar()
-
-		bar = loveframes.hoverobject == hbar and hbar or vbar
-	elseif self.vbar and not self.hbar then
-		bar = self:GetVerticalScrollBody():GetScrollBar()
-	elseif not self.vbar and self.hbar then
-		bar = self:GetHorizontalScrollBody():GetScrollBar()
-	end
+	local bar = self:GetScrollBar()
 
 	if self:IsTopList() and bar then
 		bar:Scroll(-y)
